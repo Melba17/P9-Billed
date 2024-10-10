@@ -48,7 +48,7 @@ export default class Login {
     e.preventDefault()
     const user = {
       type: "Admin",
-      // Valeurs de Login Admin
+      // Bug 2 : Valeurs de Login modifiées => admin au lieu d'employee
       email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value,
       password: e.target.querySelector(`input[data-testid="admin-password-input"]`).value,
       status: "connected"

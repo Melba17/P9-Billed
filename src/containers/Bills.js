@@ -44,9 +44,6 @@ export default class {
               const rawDate = doc.date; // Date brute non formatée
               const formattedDate = formatDate(doc.date); // Date formatée pour l'affichage
   
-              // Log pour vérifier les valeurs de `rawDate` et de `formattedDate`
-              // console.log('Bill avec rawDate:', { rawDate: rawDate, formattedDate: formattedDate,});
-  
               return {
                 ...doc,
                 rawDate: rawDate, // Conserver la date brute pour le tri
@@ -64,19 +61,12 @@ export default class {
             }
           });
   
-          // Log pour vérifier la liste triée avant de la renvoyer
           const sortedBills = bills.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
-          // console.log('Sorted bills:', sortedBills);
   
           return sortedBills;
         });
     }
   };
-  
-  
-  
-  
-  
-  
+   
 }
   

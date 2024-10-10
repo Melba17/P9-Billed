@@ -11,7 +11,7 @@ import {localStorageMock} from "../__mocks__/localStorage.js";
 
 import router from "../app/Router.js";
 
-// Mock du store pour simuler la récupération des factures
+// Bug 1 :Ajout Mock du store pour simuler la récupération des factures
 const mockStore = {
   bills: jest.fn(() => ({
     list: jest.fn().mockResolvedValue(bills), // `bills` est la liste des factures de `fixtures/bills.js`
@@ -28,6 +28,7 @@ describe("Given I am connected as an employee", () => {
       Object.defineProperty(window, 'localStorage', { value: localStorageMock });
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee',
+        // Bug 1 : ajout de ces 2 lignes pour amélioration
         email: 'employee@test.tld', // Utilise l'email exact de l'utilisateur
         statut: 'connected' // Simule un utilisateur connecté
       }));
@@ -44,26 +45,35 @@ describe("Given I am connected as an employee", () => {
       // to-do write expect expression
 
     })
-    // Test 2 : vérifie que les factures sont triées dans l'ordre anti-chronologique, c'est-à-dire de la plus récente à la plus ancienne
+    // Bug 1 / Test 2 : vérifie que les factures sont triées dans l'ordre anti-chronologique, c'est-à-dire de la plus récente à la plus ancienne
     test("Then bills should be ordered from earliest to latest", async () => {
-      // Simule l'affichage de la page des factures avec les données récupérées
+      // Simule l'affichage de la page des factures avec les données récupérées.
+      // `billsInstance` est une instance de la classe `Bills` qui est initialisée avec des paramètres simulés
       const billsInstance = new Bills({ document, onNavigate: jest.fn(), store: mockStore, localStorage: window.localStorage });
-      const bills = await billsInstance.getBills();
-      // console.log('Factures récupérées:', bills); // Ajout du log pour vérifier les factures récupérées.
       
+      // Appelle la méthode `getBills` pour récupérer les données des factures et les stocke dans `bills`
+      const bills = await billsInstance.getBills();
+      
+      // Met à jour le contenu de la page avec l'interface utilisateur générée par `BillsUI` en utilisant les données des factures
       document.body.innerHTML = BillsUI({ data: bills });
       
-      // Récupérer les dates brutes depuis l'attribut `data-raw-date`
+      // Récupère toutes les dates brutes (non formatées) des éléments HTML ayant l'attribut `data-raw-date` (par exemple, les cellules de tableau contenant les dates des factures)
       const dates = [...document.querySelectorAll('td[data-raw-date]')].map(a => a.getAttribute('data-raw-date'));
-    
+      
+      // Fonction de tri pour ordonner les dates de manière décroissante (de la plus récente à la plus ancienne).
+      // Elle retourne -1 si `a` vient après `b`, sinon elle retourne 1
       const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);
+      
+      // Trie les dates extraites à l'aide de la fonction `antiChrono` pour obtenir l'ordre attendu.
       const datesSorted = [...dates].sort(antiChrono);
       
+      // Affiche les dates triées attendues dans la console pour aider au débogage.
       console.log('Dates triées attendues:', datesSorted);
-    
+      
+      // Vérifie si les dates affichées (`dates`) sont triées dans l'ordre décroissant en les comparant aux `datesSorted`
+      // `expect` vérifie que les deux tableaux sont identiques, assurant que les dates sont correctement triées de la plus récente à la plus ancienne
       expect(dates).toEqual(datesSorted);
     });
-    
     
   })
 })
