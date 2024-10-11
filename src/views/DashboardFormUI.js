@@ -5,7 +5,7 @@ import eyeWhite from '../assets/svg/eye_white.js'
 import { formatDate } from '../app/format.js'
 
 
-// Ce fichier génère une interface utilisateur pour la visualisation des factures dans un tableau de bord administratif. Il permet d'afficher les détails des factures, de visualiser les justificatifs via une modale, et de permettre aux administrateurs de gérer les factures en attente (avec des options pour accepter ou refuser la facture)
+// Ce fichier génère une interface utilisateur pour la visualisation des factures dans un tableau de bord administratif. Il permet d'afficher les détails des factures, de visualiser les justificatifs via une modale, et de permettre à l'administrateur de gérer les factures en attente (avec des options pour accepter ou refuser la facture)
 
 export const modal = () => (`
   <div class="modal fade" id="modaleFileAdmin1" data-testid="modaleFileAdmin" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

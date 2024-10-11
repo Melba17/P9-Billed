@@ -33,8 +33,10 @@ export default class {
     $('#modaleFile').modal('show')
   }
 
+  // Bug 1
   getBills = () => {
     if (this.store) {
+      // Récupération de la liste des factures
       return this.store
         .bills()
         .list()
@@ -60,7 +62,13 @@ export default class {
               };
             }
           });
-  
+          //  Trie du tableau de factures (bills) par date, de la plus récente à la plus ancienne
+          // .sort() méthode de trie selon la fonction de comparaison (a, b) => new Date(b.rawDate) - new Date(a.rawDate)
+          // new Date(b.rawDate) et new Date(a.rawDate) convertissent les chaînes de caractères de la propriété rawDate de chaque facture en objets Date JS
+          // La propriété rawDate représente une date sous forme de chaîne de caractères
+          // Si le résultat est positif, b plus récent que a, b sera trié avant a
+          // Si le résultat est négatif, a plus récent que b, a sera trié avant b
+          // Si le résultat est zéro, cela signifie que les deux dates sont identiques
           const sortedBills = bills.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
   
           return sortedBills;
