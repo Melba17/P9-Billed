@@ -179,6 +179,8 @@ describe("Given that I am a user on login page", () => {
     test("Then It should renders Login page", () => {
       document.body.innerHTML = LoginUI();
       // Charge l'interface de connexion
+
+      // Bug 2 => Ajustement des sélecteurs/attributs
       const inputEmailUser = screen.getByTestId("admin-email-input");
       // Sélectionne le champ d'email de l'administrateur
       expect(inputEmailUser.value).toBe("");

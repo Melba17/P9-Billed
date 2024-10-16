@@ -1,4 +1,4 @@
-/** 
+/**
  * @jest-environment jsdom
  */
 // Ces tests utilisent Jest et Testing Library pour simuler l'interaction avec l'UI et garantir que l'application fonctionne comme prévu dans ce contexte
@@ -15,10 +15,12 @@ import router from "../app/Router.js";
 // Ajout d'un Mock du store pour simuler la récupération des factures. Cela permet de contrôler les données retournées par l'API sans dépendre d'une vraie base de données
 jest.mock("../app/store", () => mockStore);
 
-////////// TESTS UNITAIRES EMPLOYEE //////////
+////////// TESTS EMPLOYÉ //////////
 describe("Given I am connected as an employee", () => {
+
   describe("When I am on Bills Page", () => {
-    // Test 1 : Simule l'affichage de la page des factures et vérifie que l'icône de la facture dans le menu vertical est mise en surbrillance
+
+    // TEST D'INTEGRATION : Simule l'affichage de la page des factures et vérifie que l'icône de la facture dans le menu vertical est mise en surbrillance
     test("Then bill icon in vertical layout should be highlighted", async () => {
       // Simule un utilisateur employé connecté en configurant localStorage pour stocker les informations de l'utilisateur
       Object.defineProperty(window, 'localStorage', { value: localStorageMock });
@@ -32,53 +34,47 @@ describe("Given I am connected as an employee", () => {
       root.setAttribute("id", "root");
       document.body.append(root);
       // Le routeur est initialisé, et la navigation vers la page des factures est simulée avec window.onNavigate
-      router();
-      window.onNavigate(ROUTES_PATH.Bills);
+      router();  // TEST D'INTEGRATION (CAR ON UTILISE LE ROUTEUR)
+      window.onNavigate(ROUTES_PATH.Bills);  // TEST D'INTEGRATION
       // Le test attend que l'icône de facture, identifiée par data-testid="icon-window", soit rendue dans le DOM
-      await waitFor(() => screen.getByTestId('icon-window'));
+      await waitFor(() => screen.getByTestId('icon-window')); // TEST D'INTEGRATION
       const windowIcon = screen.getByTestId('icon-window');
-      // Test 1 complété
+      
       // Ajout de l'assertion pour vérifier que l'icône de la fenêtre facture (barre latérale de gauche) est mise en surbrillance avec la classe 'active-icon'
-      expect(windowIcon.classList.contains('active-icon')).toBe(true); 
+      expect(windowIcon.classList.contains('active-icon')).toBe(true);  // TEST D'INTEGRATION
     });
 
-    // Test 2 : Vérifie que les factures sont triées dans l'ordre anti-chronologique
+    // TEST D'INTEGRATION : Vérifie que les factures sont triées dans l'ordre anti-chronologique
     test("Then bills should be ordered from earliest to latest", async () => {
       // Simule l'affichage de la page des factures avec les données récupérées.
       // `billsInstance` est une instance de la classe `Bills` qui est initialisée avec des paramètres simulés
       const billsInstance = new Bills({ document, onNavigate: jest.fn(), store: mockStore, localStorage: window.localStorage });
       
       // Appelle la méthode `getBills` pour récupérer les données des factures et les stocke dans `bills`
-      const bills = await billsInstance.getBills();
+      const bills = await billsInstance.getBills(); // TEST D'INTEGRATION (CAR ON APPELLE UNE MÉTHODE QUI INTERAGIT AVEC LE STORE)
       
       // Met à jour le contenu de la page avec l'interface utilisateur générée par `BillsUI` en utilisant les données des factures
-      document.body.innerHTML = BillsUI({ data: bills });
+      document.body.innerHTML = BillsUI({ data: bills });  // TEST D'INTEGRATION (MISE À JOUR DU DOM)
       
-      // Récupère toutes les dates brutes (non formatées) des éléments HTML ayant l'attribut `data-raw-date` (par exemple, les cellules de tableau contenant les dates des factures)
-      const dates = [...document.querySelectorAll('td[data-raw-date]')].map(a => a.getAttribute('data-raw-date'));
+      // Récupère toutes les dates brutes (non formatées) des éléments HTML ayant l'attribut `data-raw-date`
+      const dates = [...document.querySelectorAll('td[data-raw-date]')].map(a => a.getAttribute('data-raw-date')); // TEST D'INTEGRATION
       
-      // Fonction de tri pour ordonner les dates de manière décroissante (de la plus récente à la plus ancienne).
-      // Elle retourne -1 si `a` vient après `b`, sinon elle retourne 1
-      const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);
+      // Fonction de tri pour ordonner les dates de manière décroissante
+      const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);  // TEST UNITAIRE (CAR ON TESTE UNE LOGIQUE DE TRI ISOLÉE)
       
-      // Trie les dates extraites à l'aide de la fonction `antiChrono` pour obtenir l'ordre attendu.
-      const datesSorted = [...dates].sort(antiChrono);
+      // Trie les dates extraites à l'aide de la fonction `antiChrono`
+      const datesSorted = [...dates].sort(antiChrono);  // TEST UNITAIRE (CAR C'EST UNE OPÉRATION DE TRI SIMPLE)
       
-      // Affiche les dates triées attendues dans la console pour aider au débogage.
-      console.log('Dates triées attendues:', datesSorted);
-      
-      // Vérifie si les dates affichées (`dates`) sont triées dans l'ordre décroissant en les comparant aux `datesSorted`
-      // `expect` vérifie que les deux tableaux sont identiques, assurant que les dates sont correctement triées de la plus récente à la plus ancienne
-      expect(dates).toEqual(datesSorted);
+      // Vérifie si les dates affichées (`dates`) sont triées dans l'ordre décroissant
+      expect(dates).toEqual(datesSorted);  // TEST D'INTEGRATION (CAR ON VÉRIFIE L'INTERACTION DU TRI AVEC L'INTERFACE)
     });
 
     /////////// TEST D'INTEGRATION GET BILLS /////////////
-    describe("When I am on the Bills Page", () => {
+    describe("When I click on the 'new bill' button", () => {
       // On simule la fonction de navigation
       const onNavigate = jest.fn();
     
-      // Test pour le bouton "Nouvelle note de frais"
-      test("When I click on the 'new bill' button", () => {
+      test("Then it should navigate to NewBill page", () => {
         // On injecte le HTML de BillsUI avec des données de factures
         document.body.innerHTML = BillsUI({ data: bills });
     
@@ -93,16 +89,15 @@ describe("Given I am connected as an employee", () => {
         // On récupère le bouton "Nouvelle note de frais"
         const newBillButton = screen.getByTestId("btn-new-bill");
         // On simule le clic sur le bouton
-        userEvent.click(newBillButton);
-      });
-    
-      test("Then it should navigate to NewBill page", () => {
+        userEvent.click(newBillButton);  // TEST D'INTEGRATION (CAR ON SIMULE UNE INTERACTION UTILISATEUR)
+        
         // On vérifie que la fonction de navigation a bien été appelée avec le bon chemin
-        expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["NewBill"]);
+        expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["NewBill"]);  // TEST D'INTEGRATION
       });
-    
-      // Test pour l'icône "œil"
-      test("When I click on the 'eye' icon", () => {
+    });
+
+    describe("When I click on the 'eye' icon", () => {
+      test("Then the modal should open", () => {
         // On injecte le HTML de BillsUI avec des données de factures
         document.body.innerHTML = BillsUI({ data: bills });
     
@@ -120,16 +115,12 @@ describe("Given I am connected as an employee", () => {
         // On récupère la première icône "œil"
         const iconEye = screen.getAllByTestId("icon-eye")[0];
         // On simule le clic sur l'icône "œil"
-        userEvent.click(iconEye);
-      });
-    
-      test("Then the modal should open", () => {
+        userEvent.click(iconEye);  // TEST D'INTEGRATION (INTERACTION AVEC LE DOM)
+        
         // On vérifie que la fonction modal a bien été appelée
-        expect($.fn.modal).toHaveBeenCalled();
+        expect($.fn.modal).toHaveBeenCalled();  // TEST D'INTEGRATION
       });
     });
-    
-
 
     /////////// TEST D'INTEGRATION D'ERREUR API /////////
     describe("When an error occurs on API", () => { // Définition d'un groupe de tests pour vérifier le comportement lorsque des erreurs se produisent lors de la récupération des données de l'API
@@ -171,6 +162,5 @@ describe("Given I am connected as an employee", () => {
         });
       });
     });
-
   });
 });

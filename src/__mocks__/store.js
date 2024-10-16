@@ -64,34 +64,44 @@ const mockedBills = {
       }])
 
   },
-  //Cette méthode simule la création d'une nouvelle facture. Elle retourne une promesse résolue avec un objet contenant une fileUrl (URL du fichier associé à la facture) et une key (une clé unique). Cela imite la réponse d'une API après qu'une facture a été créée avec succès
+  
   create(bill) {
-    return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'})
-  },
-  // Cette méthode simule la mise à jour d'une facture existante. Elle retourne une promesse résolue avec l'objet de la facture mise à jour. Cela imite la réponse d'une API après qu'une facture a été modifiée
-  update(bill) {
+    // Récupère le fichier depuis l'objet FormData
+    const file = bill.data.get('file');  
+    
+    // Retourne une promesse résolue simulant la création d'une nouvelle facture
     return Promise.resolve({
-      "id": "47qAXb6fIm2zOKkLzMro",
-      "vat": "80",
-      "fileUrl": "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
-      "status": "pending",
-      "type": "Hôtel et logement",
-      "commentary": "séminaire billed",
-      "name": "encore",
-      "fileName": "preview-facture-free-201801-pdf-1.jpg",
-      "date": "2004-04-04",
-      "amount": 400,
-      "commentAdmin": "ok",
-      "email": "a@a",
-      "pct": 20
-    })
+      // URL du fichier après sa création (simulée)
+      fileUrl: 'https://localhost:3456/images/test.jpg',
+      // Clé unique générée pour la facture
+      key: '1234',
+      // Utilise le nom du fichier si disponible, sinon attribue 'photo.jpg' par défaut
+      fileName: file ? file.name : 'photo.jpg'  
+    });
   },
+
+update(bill) {
+    // Retourne une promesse résolue simulant la mise à jour d'une facture existante
+    return Promise.resolve({
+      // Fusionne les données de la facture avec les nouvelles données (spread operator)
+      ...bill,  
+      // Garde l'ID de la facture, nécessaire pour identifier la facture dans le backend
+      id: "47qAXb6fIm2zOKkLzMro",  
+      // Utilise l'URL du fichier si elle est déjà présente, sinon fournit une URL par défaut
+      fileUrl: bill.fileUrl || "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg",  
+      // Utilise le statut de la facture si présent, sinon définit le statut par défaut à "pending"
+      status: bill.status || "pending",  
+      // Conserve l'email de l'utilisateur ou définit une valeur par défaut
+      email: bill.email || "a@a",  
+    });
+  }
 }
 
 export default {
+  // Méthode pour accéder aux factures simulées
   bills() {
     return mockedBills
-    //return {}
   },
 }
+
 

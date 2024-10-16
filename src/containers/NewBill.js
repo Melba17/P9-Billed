@@ -1,114 +1,103 @@
-import { ROUTES_PATH } from '../constants/routes.js'
-import Logout from "./Logout.js"
+import { ROUTES_PATH } from '../constants/routes.js'; // Import des chemins de navigation (par exemple pour rediriger l'utilisateur après soumission)
+import Logout from "./Logout.js"; // Import de la classe Logout pour gérer la déconnexion utilisateur
 
-// Ce fichier permet à l'utilisateur de créer une nouvelle facture dans l'application en remplissant un formulaire et en téléchargeant un fichier associé. Les données de la facture sont ensuite envoyées au backend pour être enregistrées, et l'utilisateur est redirigé vers la page des factures après la soumission
+export default class NewBill { // Définition de la classe NewBill qui gère la création d'une nouvelle facture
+  constructor({ document, onNavigate, store, localStorage }) { // Constructeur de la classe, initialisant les paramètres nécessaires
+    this.document = document; // Référence à l'objet document pour manipuler le DOM
+    this.onNavigate = onNavigate; // Fonction de navigation pour rediriger l'utilisateur (par exemple vers la page des factures)
+    this.store = store; // Référence au store pour gérer les appels API liés aux factures
+    const formNewBill = this.document.querySelector(`form[data-testid="form-new-bill"]`); // Sélection du formulaire de soumission de facture via son data-testid
+    formNewBill.addEventListener("submit", this.handleSubmit.bind(this)); // Ajout d'un listener pour soumettre le formulaire et déclencher la méthode handleSubmit
 
-export default class NewBill {
-  constructor({ document, onNavigate, store, localStorage }) {
-    this.document = document
-    this.onNavigate = onNavigate
-    this.store = store
-    const formNewBill = this.document.querySelector(`form[data-testid="form-new-bill"]`)
-    formNewBill.addEventListener("submit", this.handleSubmit)
-    const file = this.document.querySelector(`input[data-testid="file"]`)
-    file.addEventListener("change", this.handleChangeFile)
-    this.fileUrl = null
-    this.fileName = null
-    this.billId = null
-    new Logout({ document, localStorage, onNavigate })
+    const file = this.document.querySelector(`input[data-testid="file"]`); // Sélection de l'input de fichier via son data-testid
+    file.addEventListener("change", this.handleChangeFile); // Ajout d'un listener pour traiter le changement de fichier avec handleChangeFile
+    this.fileUrl = null; // Initialisation de l'URL du fichier comme null
+    this.fileName = null; // Initialisation du nom du fichier comme null
+    this.billId = null; // Initialisation de l'ID de la facture comme null
+    new Logout({ document, localStorage, onNavigate }); // Instanciation de la classe Logout pour gérer la déconnexion
   }
 
-  handleChangeFile = e => {
-    e.preventDefault();
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0];
-    const filePath = e.target.value.split(/\\/g);
-    const fileName = filePath[filePath.length - 1];
-    const formData = new FormData();
-    const email = JSON.parse(localStorage.getItem("user")).email;
+  handleChangeFile = async (e) => { // Méthode asynchrone pour gérer le changement de fichier
+    e.preventDefault(); // Empêche le comportement par défaut du navigateur lors du changement de fichier
+    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]; // Récupération du premier fichier sélectionné dans l'input
+    const fileName = file.name; // Récupération du nom du fichier
+    const formData = new FormData(); // Création d'un objet FormData pour envoyer le fichier avec d'autres données
+    const email = JSON.parse(localStorage.getItem("user")).email; // Récupération de l'email de l'utilisateur à partir du localStorage
 
-    // Bug 3 Modifs : vérifie l'extension du fichier avant de procéder à l'envoi.
-    // Si le fichier ne correspond pas aux extensions autorisées, un message d'alerte s'affiche, et le champ de fichier est réinitialisé.
-    const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
-    if (!allowedExtensions.test(fileName)) {
-      alert('Seuls les fichiers JPG, JPEG, ou PNG sont acceptés');
-      e.target.value = ''; // Réinitialiser le champ de fichier pour forcer l'utilisateur à choisir un fichier valide
-      return;
+    const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i; // Définition des extensions de fichiers autorisées (images)
+    // /.../ entourent l'expression régulière ; Le backslash \. pour signifier "un point littéral"; jpg|jpeg|png pour les extensions autorisées avec  l'opérateur "OU" => | ; $ signifie "fin de la chaîne" ; i pour signifier que la recherche est insensible à la casse Maj ou min
+    if (!allowedExtensions.test(fileName)) { // Vérification que l'extension du fichier est valide
+      alert('Les fichiers .jpg, .jpeg et .png sont les seuls autorisés'); // Affichage d'une alerte si le fichier a une extension non autorisée
+      e.target.value = ''; // Réinitialisation de l'input fichier
+      return; // Sortie de la fonction si l'extension n'est pas valide
     }
 
-    formData.append('file', file);
-    formData.append('email', email);
+    formData.append('file', file); // Ajout du fichier à l'objet FormData
+    formData.append('email', email); // Ajout de l'email de l'utilisateur à l'objet FormData
 
-    this.store
-      .bills()
-      .create({
-        data: formData,
+    try {
+      const response = await this.store.bills().create({ // Envoi du fichier au backend via la méthode create du store
+        data: formData, // Envoi de formData contenant le fichier et l'email
         headers: {
-          noContentType: true
+          noContentType: true // Spécifie de ne pas ajouter de type de contenu, FormData le gère automatiquement
         }
-      })
-      .then((response) => {
-        // Afficher la réponse complète de l'API pour déboguer et comprendre la structure
-        console.log('Réponse complète de l\'API:', response);
-        
-        this.billId = response.key;
-        this.fileName = fileName;
-
-        // Bug 3
-        // Construire l'URL du fichier si `fileUrl` n'est pas fourni directement
-        // Remplacer les backslashes par des slashes pour construire une URL valide
-        const cleanedFilePath = response.filePath.replace(/\\/g, '/');
-        this.fileUrl = response.fileUrl || `http://yourserver.com/${cleanedFilePath}/${response.fileName}`;
-
-        console.log('fileUrl:', this.fileUrl, 'fileName:', this.fileName);
-      })
-      // Ajout Bug 3 :  amélioration de la gestion des erreurs et informe l'utilisateur si le téléchargement échoue pour une raison quelconque (par exemple, un problème de serveur)
-      .catch(error => {
-        console.error('Erreur lors de la création de la facture avec le fichier:', error);
-        alert('Une erreur est survenue lors de l\'envoi du fichier. Veuillez réessayer.');
       });
+
+      this.billId = response.key; // Récupération de l'ID de la facture à partir de la réponse de l'API
+      this.fileName = response.fileName; // Récupération du nom du fichier à partir de la réponse
+      const cleanedFilePath = response.filePath ? response.filePath.replace(/\\/g, '/') : ''; // Nettoyage du chemin de fichier (remplacement des backslashes par des slashes)
+      // /\\/g = 1er arg => \\ échappement du backslash ; g signifie "global", ce qui indique que nous voulons remplacer tous les backslashes dans la chaîne, pas seulement le premier trouvé
+      // '/' (le second argument de replace) => C'est la chaîne (slash) par laquelle nous voulons remplacer les backslashes
+      this.fileUrl = response.fileUrl || `http://yourserver.com/${cleanedFilePath}/${response.fileName}`; // Construction de l'URL du fichier
+
+    } catch (error) {
+      console.error('Erreur lors de la création de la facture avec le fichier:', error); // Affichage d'une erreur dans la console en cas d'échec
+      alert('Une erreur est survenue lors de l\'envoi du fichier. Veuillez réessayer.'); // Affichage d'une alerte si l'upload échoue
+    }
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value);
-    
-    const email = JSON.parse(localStorage.getItem("user")).email;
-    
-    // Bug 3 modifs : vérification qui assure que la soumission d'une note de frais ne se fait pas sans une fileUrl et un fileName valides
-    // Si ces informations manquent, une alerte est affichée, et la soumission est annulée
-    if (!this.fileUrl || !this.fileName) {
-      alert('Veuillez télécharger un fichier valide avant de soumettre la note de frais.');
-      return;
+  handleSubmit = async (e) => { // Méthode asynchrone pour gérer la soumission du formulaire
+    e.preventDefault(); // Empêche le comportement par défaut lors de la soumission du formulaire
+
+    const email = JSON.parse(localStorage.getItem("user")).email; // Récupération de l'email de l'utilisateur à partir du localStorage
+
+    if (!this.fileUrl || !this.fileName) { // Vérifie si un fichier a été correctement sélectionné
+      alert('Veuillez télécharger un fichier valide avant de soumettre la note de frais.'); // Affiche une alerte si aucun fichier n'a été sélectionné
+      return; // Sortie de la fonction si les fichiers ne sont pas valides
     }
 
-    const bill = {
+    const bill = { // Création d'un objet facture avec les informations du formulaire
       email,
-      type: e.target.querySelector(`select[data-testid="expense-type"]`).value,
-      name:  e.target.querySelector(`input[data-testid="expense-name"]`).value,
-      amount: parseInt(e?.target.querySelector(`input[data-testid="amount"]`).value),
-      date:  e.target.querySelector(`input[data-testid="datepicker"]`).value,
-      vat: e.target.querySelector(`input[data-testid="vat"]`).value, // input TVA
-      pct: parseInt(e.target.querySelector(`input[data-testid="pct"]`).value) || 20, // % TVA
-      commentary: e.target.querySelector(`textarea[data-testid="commentary"]`).value,
-      fileUrl: this.fileUrl,
-      fileName: this.fileName,
-      status: 'pending'
+      type: e.target.querySelector(`select[data-testid="expense-type"]`).value, // Récupération du type de dépense
+      name: e.target.querySelector(`input[data-testid="expense-name"]`).value, // Récupération du nom de la dépense
+      amount: parseInt(e?.target.querySelector(`input[data-testid="amount"]`).value), // Récupération du montant et conversion en nombre
+      date: e.target.querySelector(`input[data-testid="datepicker"]`).value, // Récupération de la date
+      vat: e.target.querySelector(`input[data-testid="vat"]`).value, // Récupération de la TVA
+      pct: parseInt(e.target.querySelector(`input[data-testid="pct"]`).value) || 20, // Récupération du pourcentage ou valeur par défaut 20
+      commentary: e.target.querySelector(`textarea[data-testid="commentary"]`).value, // Récupération du commentaire
+      fileUrl: this.fileUrl, // URL du fichier
+      fileName: this.fileName, // Nom du fichier
+      status: 'pending' // Statut par défaut de la facture (en attente)
     };
 
-    this.updateBill(bill);
-    this.onNavigate(ROUTES_PATH['Bills']);
+    try {
+      await this.updateBill(bill); // Appelle la méthode updateBill pour envoyer la facture au backend
+      this.onNavigate(ROUTES_PATH['Bills']); // Redirige vers la page des factures après soumission réussie
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la facture:', error); // Affichage d'une erreur dans la console en cas d'échec
+      alert('Une erreur est survenue lors de la mise à jour de la facture. Veuillez réessayer.'); // Affichage d'une alerte si la soumission échoue
+    }
   };
 
-  // not need to cover this function by tests
-  updateBill = (bill) => {
-    if (this.store) {
-      this.store
-        .bills()
-        .update({data: JSON.stringify(bill), selector: this.billId})
-        .then(() => {
-          this.onNavigate(ROUTES_PATH['Bills']);
-        })
-        .catch(error => console.error(error));
+  updateBill = async (bill) => { // Méthode asynchrone pour mettre à jour une facture via le store
+    if (this.store) { // Vérifie si le store est disponible
+      try {
+        await this.store
+          .bills()
+          .update({ data: JSON.stringify(bill), selector: this.billId }); // Envoie la facture mise à jour au backend
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de la facture:', error); // Affichage d'une erreur en cas d'échec de mise à jour
+      }
     }
   };
 }

@@ -115,67 +115,59 @@ export default class {
 
   // Méthode pour gérer l'édition d'une facture lorsqu'un administrateur clique dessus
   handleEditTicket(e, bill, bills) {
-    // Initialisation du compteur et de l'ID pour suivre l'état de la sélection
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    // Si le compteur n'est pas défini ou si l'ID sélectionné est différent de celui de la facture actuelle,
-    // réinitialiser le compteur à 0 pour recommencer le suivi de sélection.
-
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
-    // Si l'ID n'est pas défini ou si l'ID sélectionné ne correspond pas à celui de la facture actuelle,
-    // on met à jour l'ID pour qu'il corresponde à la facture actuelle.
-
-    if (this.counter % 2 === 0) {
-        // Si le compteur est un multiple de 2 (première fois ou après chaque deuxième clic),
+    // Si l'objet "counters" n'est pas encore défini, on le crée pour stocker un compteur pour chaque facture.
+    if (this.counters === undefined) {
+      this.counters = {}; // Crée un objet pour stocker les compteurs spécifiques à chaque facture.
+    }
+    
+    // Si le compteur pour la facture sélectionnée n'est pas encore initialisé, on le met à 0.
+    if (this.counters[bill.id] === undefined) {
+      this.counters[bill.id] = 0; // Initialise le compteur spécifique à la facture sélectionnée.
+    }
+    
+    // Si le compteur pour cette facture est un multiple de 2 (premier clic ou après chaque deuxième clic).
+    if (this.counters[bill.id] % 2 === 0) {
+        // Pour chaque facture, on remet l'arrière-plan à la couleur bleue pour désélectionner visuellement.
         bills.forEach(b => {
-            $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
-            // Pour chaque facture, on change le style d'arrière-plan en bleu (#0D5AE5),
-            // afin de désélectionner visuellement toutes les factures dans la liste.
-        })
+            $(`#open-bill${b.id}`).css({ background: '#0D5AE5' });
+        });
 
-        $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
-        // On change l'arrière-plan de la facture sélectionnée à une autre couleur (#2A2B35),
-        // pour indiquer qu'elle est en cours d'édition ou de visualisation.
-
-        $('.dashboard-right-container div').html(DashboardFormUI(bill))
-        // On remplace le contenu HTML de la section droite du tableau de bord avec le formulaire détaillé
-        // de la facture en utilisant une fonction `DashboardFormUI` qui prend la facture en paramètre.
-
-        $('.vertical-navbar').css({ height: '150vh' })
-        // On ajuste la hauteur de la barre de navigation verticale à 150vh pour correspondre à la nouvelle interface.
-
-        this.counter ++
-        // On incrémente le compteur pour suivre l'état de la sélection (1er clic dans la séquence).
+        // Pour la facture sélectionnée, on change la couleur de fond pour indiquer qu'elle est en cours d'édition.
+        $(`#open-bill${bill.id}`).css({ background: '#2A2B35' });
+        
+        // On affiche le formulaire de détails de la facture dans la partie droite du tableau de bord.
+        $('.dashboard-right-container div').html(DashboardFormUI(bill));
+        
+        // On ajuste la hauteur de la barre de navigation verticale pour correspondre à l'affichage de la facture.
+        $('.vertical-navbar').css({ height: '150vh' });
+        
+        // On incrémente le compteur spécifique à cette facture.
+        this.counters[bill.id]++;
     } else {
-        // Sinon, si le compteur n'est pas un multiple de 2 (deuxième clic dans la séquence),
-        $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-        // On réinitialise l'arrière-plan de la facture sélectionnée à la couleur bleu (#0D5AE5),
-        // indiquant qu'elle est désélectionnée.
-
+        // Si le compteur n'est pas un multiple de 2 (deuxième clic), on réinitialise l'arrière-plan à la couleur bleue.
+        $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' });
+        
+        // On affiche une grande icône à la place du formulaire, indiquant qu'aucune facture n'est en cours d'édition.
         $('.dashboard-right-container div').html(`
             <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
-        `)
-        // On remplace le contenu HTML de la section droite par une icône représentant la facture de grande taille,
-        // pour indiquer qu'aucune facture n'est actuellement sélectionnée pour l'édition.
-
-        $('.vertical-navbar').css({ height: '120vh' })
-        // On ajuste la hauteur de la barre de navigation verticale à 120vh pour s'adapter à la vue réduite.
-
-        this.counter ++
-        // On incrémente le compteur pour continuer à suivre la séquence (2e clic dans la séquence).
+        `);
+        
+        // On ajuste la hauteur de la barre de navigation verticale à 120vh pour correspondre à l'affichage par défaut.
+        $('.vertical-navbar').css({ height: '120vh' });
+        
+        // On incrémente à nouveau le compteur pour cette facture.
+        this.counters[bill.id]++;
     }
 
-    $('#icon-eye-d').click(this.handleClickIconEye)
-    // On attache un événement `click` à l'élément avec l'ID `icon-eye-d` pour afficher la facture en grand,
-    // en appelant la fonction `handleClickIconEye`.
-
-    $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
-    // On attache un événement `click` au bouton `btn-accept-bill` pour accepter la facture,
-    // en appelant la fonction `handleAcceptSubmit` avec l'événement `e` et la facture `bill`.
-
-    $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
-    // On attache un événement `click` au bouton `btn-refuse-bill` pour refuser la facture,
-    // en appelant la fonction `handleRefuseSubmit` avec l'événement `e` et la facture `bill`.
-}
+    // Attache un événement "click" à l'icône pour afficher la facture en grand format (en modal).
+    $('#icon-eye-d').click(this.handleClickIconEye);
+    
+    // Attache un événement "click" au bouton d'acceptation pour accepter la facture sélectionnée.
+    $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill));
+    
+    // Attache un événement "click" au bouton de refus pour refuser la facture sélectionnée.
+    $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill));
+  }
 
 
   // Méthode pour gérer la soumission d'une facture acceptée par l'administrateur.
@@ -194,7 +186,6 @@ export default class {
   // Méthode pour gérer la soumission d'une facture refusée par l'administrateur.
   handleRefuseSubmit = (e, bill) => {
     console.log('handleRefuseSubmit triggered', bill);
-  console.trace('Trace for handleRefuseSubmit');
     e.preventDefault(); // Empêche le comportement par défaut du formulaire ou du bouton.
     e.stopPropagation(); // Empêche la propagation de l'événement à d'autres éléments.
     const newBill = {
@@ -211,6 +202,7 @@ export default class {
   handleShowTickets(e, bills, index) {
     e.preventDefault(); // Empêche le comportement par défaut du formulaire ou du bouton.
     e.stopPropagation(); // Empêche la propagation de l'événement à d'autres éléments.
+
     // Initialisation du compteur spécifique à la liste sélectionnée.
     if (this.counters === undefined) {
       this.counters = {}; // Crée un objet pour stocker les compteurs de chaque liste.
@@ -274,13 +266,17 @@ export default class {
   // Cela est fait parce que cette fonction fait des interactions réseau ou des manipulations de données
   // qui sont difficiles à tester ou qui ne sont pas pertinentes pour la couverture.
   /* istanbul ignore next */
-  updateBill = (bill) => {
-    if (this.store) {
-      return this.store
-        .bills()
-        .update({ data: JSON.stringify(bill), selector: bill.id }) // Met à jour la facture avec ses nouvelles données.
-        .then(bill => bill) // Retourne la facture mise à jour.
-        .catch(console.log) // Affiche l'erreur dans la console en cas de problème.
+  updateBill = async (bill) => { // Méthode asynchrone pour mettre à jour une facture via le store
+    if (this.store) { // Vérifie si le store est disponible
+      try {
+        // Utilisation de await pour attendre la réponse de l'API de mise à jour
+        await this.store
+          .bills()
+          .update({ data: JSON.stringify(bill), selector: bill.id }); // Met à jour la facture avec l'ID approprié
+      } catch (error) {
+        // Capture et affiche toute erreur survenue lors de la mise à jour
+        console.error('Erreur lors de la mise à jour de la facture:', error); 
+      }
     }
-  }
+  };
 }
