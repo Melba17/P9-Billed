@@ -11,11 +11,13 @@ export const formatDate = (dateStr) => {
  
 export const formatStatus = (status) => {
   switch (status) {
-    case "pending":
-      return "En attente"
-    case "accepted":
-      return "Accepté"
-    case "refused":
-      return "Refused"
+    case 'pending':
+      return 'En attente';
+    case 'accepted':
+      return 'Accepté';
+    case 'refused':
+      return 'Refusé';
+    default:
+      return status; // En cas de statut non prévu, on retourne le statut brut
   }
-}
+};

@@ -12,11 +12,11 @@ import { ROUTES } from "../constants/routes";
 import { fireEvent, screen } from "@testing-library/dom";
 // Import des utilitaires fireEvent et screen de @testing-library/dom pour simuler des événements et interagir avec le DOM
 
-// Tests unitaires (employé / admin)
+
 // Tests qui permettent de s'assurer que le formulaire de connexion fonctionne correctement dans différents cas :En l'absence de saisie ou en présence de données mal formatées. Lorsque les données sont correctement formatées, avec vérification du stockage des informations dans localStorage et de la redirection appropriée vers la page suivante (soit les notes de frais pour un employé, soit le tableau de bord pour un administrateur).
 
 
-// Début d'un ensemble de tests pour un utilisateur (Employé) sur la page de connexion
+////// CONNEXION EMPLOYE ////////
 describe("Given that I am a user on login page", () => {
   // Sous-groupe de tests pour le cas où l'utilisateur ne remplit pas les champs
   describe("When I do not fill fields and I click on employee button Login In", () => {
@@ -171,8 +171,7 @@ describe("Given that I am a user on login page", () => {
 
 
 
-
-// Deuxième groupe de tests : connexion en tant qu'Administrateur
+/////// CONNEXION ADMINISTRATEUR ///////////
 describe("Given that I am a user on login page", () => {
   // Cas où les champs de connexion ne sont pas remplis pour l'administrateur
   describe("When I do not fill fields and I click on admin button Login In", () => {

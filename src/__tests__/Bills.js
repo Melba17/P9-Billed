@@ -15,7 +15,7 @@ import router from "../app/Router.js";
 // Ajout d'un Mock du store pour simuler la récupération des factures. Cela permet de contrôler les données retournées par l'API sans dépendre d'une vraie base de données
 jest.mock("../app/store", () => mockStore);
 
-////////// TESTS EMPLOYÉ //////////
+////////// DIFFERENTS TESTS EMPLOYÉ //////////
 describe("Given I am connected as an employee", () => {
 
   describe("When I am on Bills Page", () => {
@@ -44,32 +44,71 @@ describe("Given I am connected as an employee", () => {
       expect(windowIcon.classList.contains('active-icon')).toBe(true);  // TEST D'INTEGRATION
     });
 
-    // TEST D'INTEGRATION : Vérifie que les factures sont triées dans l'ordre anti-chronologique
-    test("Then bills should be ordered from earliest to latest", async () => {
-      // Simule l'affichage de la page des factures avec les données récupérées.
-      // `billsInstance` est une instance de la classe `Bills` qui est initialisée avec des paramètres simulés
-      const billsInstance = new Bills({ document, onNavigate: jest.fn(), store: mockStore, localStorage: window.localStorage });
-      
-      // Appelle la méthode `getBills` pour récupérer les données des factures et les stocke dans `bills`
-      const bills = await billsInstance.getBills(); // TEST D'INTEGRATION (CAR ON APPELLE UNE MÉTHODE QUI INTERAGIT AVEC LE STORE)
-      
-      // Met à jour le contenu de la page avec l'interface utilisateur générée par `BillsUI` en utilisant les données des factures
-      document.body.innerHTML = BillsUI({ data: bills });  // TEST D'INTEGRATION (MISE À JOUR DU DOM)
-      
-      // Récupère toutes les dates brutes (non formatées) des éléments HTML ayant l'attribut `data-raw-date`
-      const dates = [...document.querySelectorAll('td[data-raw-date]')].map(a => a.getAttribute('data-raw-date')); // TEST D'INTEGRATION
-      
-      // Fonction de tri pour ordonner les dates de manière décroissante
-      const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);  // TEST UNITAIRE (CAR ON TESTE UNE LOGIQUE DE TRI ISOLÉE)
-      
-      // Trie les dates extraites à l'aide de la fonction `antiChrono`
-      const datesSorted = [...dates].sort(antiChrono);  // TEST UNITAIRE (CAR C'EST UNE OPÉRATION DE TRI SIMPLE)
-      
-      // Vérifie si les dates affichées (`dates`) sont triées dans l'ordre décroissant
-      expect(dates).toEqual(datesSorted);  // TEST D'INTEGRATION (CAR ON VÉRIFIE L'INTERACTION DU TRI AVEC L'INTERFACE)
-    });
+    // TEST D'INTEGRATION GET (getBills) : Vérifie que les factures sont triées dans l'ordre décroissant
+test("Then bills should be ordered from latest to earliest", async () => {
+  // Création d'une nouvelle instance de la classe Bills, en simulant les dépendances (document, onNavigate, store et localStorage)
+  // jest.fn() est utilisé pour simuler la fonction de navigation `onNavigate`, et `mockStore` simule le store utilisé pour récupérer les factures.
+  const billsInstance = new Bills({ document, onNavigate: jest.fn(), store: mockStore, localStorage: window.localStorage });
+  
+  // Appel de la méthode asynchrone `getBills()` pour récupérer les factures. 
+  // La méthode renvoie une promesse que l'on résout ici avec `await` pour s'assurer que les factures sont bien récupérées avant de continuer.
+  const bills = await billsInstance.getBills(); // Les factures sont déjà triées ici
 
-    /////////// TEST D'INTEGRATION GET BILLS /////////////
+  // On extrait uniquement les dates brutes (rawDate) des factures récupérées.
+  // `bills.map(bill => bill.rawDate)` crée un nouveau tableau qui ne contient que les dates brutes, sans le reste des informations des factures.
+  const dates = bills.map(bill => bill.rawDate); // On récupère les dates brutes triées
+  
+  // Fonction de tri anti-chronologique.
+  // Cette fonction compare deux dates converties en objets `Date`. Si `a` (la première date) est plus récente que `b`, on renvoie -1, sinon 1.
+  // Cela permet de trier les dates dans l'ordre décroissant (du plus récent au plus ancien).
+  const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);
+  
+  // On trie le tableau `dates` extrait plus haut en utilisant la fonction de tri `antiChrono`.
+  // `...dates` crée une copie du tableau `dates` pour ne pas modifier l'original, puis on applique `sort(antiChrono)` pour trier les dates.
+  const datesSorted = [...dates].sort(antiChrono);
+  console.log(datesSorted);
+  
+  // Vérification que le tableau `dates` est bien trié dans l'ordre décroissant en le comparant au tableau trié `datesSorted`.
+  // Si `dates` et `datesSorted` sont égaux, cela signifie que les dates étaient déjà dans le bon ordre (anti-chronologique).
+  expect(dates).toEqual(datesSorted); // On vérifie que les dates sont bien triées dans l'ordre décroissant
+});
+
+    
+    ///// NOUVEAU TEST D'INTEGRATION GET : se concentre sur la récupération des factures pour un utilisateur employé depuis l'API simulée (mockStore). Cela permet de vérifier que les factures sont correctement récupérées et affichées pour un utilisateur employé connecté /////// 
+
+    test("fetches bills from mock API GET", async () => {
+      // Simule la connexion d'un utilisateur employé
+      localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "employee@test.tld" }));
+      
+      // Crée un conteneur div pour l'application et l'ajoute au DOM
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.append(root);
+      
+      // Initialise le routeur
+      router();
+      
+      // Simule la navigation vers la page des factures
+      window.onNavigate(ROUTES_PATH.Bills);
+      
+      // Attend que l'élément "Mes notes de frais" apparaisse dans le DOM
+      await waitFor(() => screen.getByText("Mes notes de frais"));
+      
+      // Vérifie que les factures en attente sont bien affichées
+      const contentPending = screen.getAllByText("En attente");
+      expect(contentPending.length).toBeGreaterThan(0);
+    
+      // Vérifie que les factures validées sont bien affichées
+      const contentAccepted = screen.getAllByText("Accepté");
+      expect(contentAccepted.length).toBeGreaterThan(0);
+    
+      // Vérifie que les factures refusées sont bien affichées
+      const contentRefused = screen.getAllByText("Refusé");
+      expect(contentRefused.length).toBeGreaterThan(0);
+      
+    });
+    
+    /////////// TESTS D'INTEGRATION DE CLICS /////////////
     describe("When I click on the 'new bill' button", () => {
       // On simule la fonction de navigation
       const onNavigate = jest.fn();

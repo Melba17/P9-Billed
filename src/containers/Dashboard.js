@@ -185,7 +185,6 @@ export default class {
 
   // Méthode pour gérer la soumission d'une facture refusée par l'administrateur.
   handleRefuseSubmit = (e, bill) => {
-    console.log('handleRefuseSubmit triggered', bill);
     e.preventDefault(); // Empêche le comportement par défaut du formulaire ou du bouton.
     e.stopPropagation(); // Empêche la propagation de l'événement à d'autres éléments.
     const newBill = {

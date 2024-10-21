@@ -11,7 +11,7 @@ const row = (bill) => {
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
-      <td data-raw-date="${bill.rawDate}">${bill.date}</td> 
+      <td>${bill.date}</td>
       <td>${bill.amount} €</td>
       <td>${bill.status}</td>
       <td>
@@ -20,6 +20,7 @@ const row = (bill) => {
     </tr>
   `);
 };
+
 
 const rows = (data) => {
   return (data && data.length) ? data.map(bill => row(bill)).join("") : "";

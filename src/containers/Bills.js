@@ -66,76 +66,54 @@ export default class {
     // Affiche la modale contenant l'image de la facture.
   }
 
-  getBills = () => { 
-    // Méthode pour récupérer les factures depuis le backend.
-
-    if (this.store) { 
-      // Vérifie si l'objet store (base de données) est disponible.
-
+  getBills = () => {
+    // Vérifie si l'objet `store` est défini avant d'essayer de récupérer les factures.
+    // Si `store` n'existe pas, la méthode ne fait rien (elle ne tente pas de récupérer les données).
+    if (this.store) {
+      // Appel à `this.store.bills().list()` pour récupérer la liste des factures depuis le backend ou une source de données (comme une API ou une base de données).
+      // `list()` renvoie une promesse qui, une fois résolue, contient un tableau de factures.
       return this.store
         .bills()
         .list()
-        .then(snapshot => { 
-          // Récupère la liste des factures depuis le backend sous forme de snapshot (tableau de factures).
-
+        .then(snapshot => {
+          // Une fois que la promesse est résolue avec les factures, le `then` est exécuté avec `snapshot` (tableau contenant les factures).
           const bills = snapshot
-            .filter(doc => doc.name && doc.amount && doc.status) 
-            // Filtre pour ne garder que les factures valides (qui ont un nom, un montant, et un statut).
-
-            .map(doc => { 
-              // Parcourt chaque facture filtrée pour la formater correctement.
-
+            // Filtrage des factures pour ne conserver que celles qui ont un `name`, un `amount`, et un `status` définis.
+            // Cela permet de s'assurer que seules les factures complètes sont manipulées.
+            .filter(doc => doc.name && doc.amount && doc.status)
+            
+            // Utilisation de `map()` pour créer un nouveau tableau de factures formatées.
+            // Chaque facture (`doc`) est transformée pour inclure des informations formatées comme la date et le statut.
+            .map(doc => {
               try {
-                const rawDate = doc.date 
-                // Stocke la date brute de la facture.
-
-                const formattedDate = formatDate(doc.date) 
-                // Formate la date avec la fonction utilitaire 'formatDate'.
-
-                return { 
-                  // Retourne un nouvel objet facture avec des propriétés formatées.
-
-                  ...doc, 
-                  // Recopie toutes les propriétés de la facture d'origine.
-
-                  rawDate: rawDate, 
-                  // Stocke la date brute pour des opérations comme le tri.
-
-                  date: formattedDate, 
-                  // Utilise la date formatée pour l'affichage.
-
-                  status: formatStatus(doc.status), 
-                  // Formate le statut de la facture avec la fonction utilitaire 'formatStatus'.
-                }
-              } catch (e) { 
-                // En cas d'erreur lors du formatage, capture l'exception.
-
-                console.log('Erreur lors du mapping de la facture:', e, 'for', doc) 
-                // Affiche un message d'erreur dans la console avec les détails de l'exception et la facture concernée.
-
-                return { 
-                  // Retourne tout de même la facture d'origine, même en cas d'erreur de formatage.
-
-                  ...doc, 
-                  rawDate: doc.date, 
-                  // Conserve la date brute, même si le formatage a échoué.
-
-                  date: doc.date, 
-                  // Utilise la date brute si le formatage échoue.
-
-                  status: formatStatus(doc.status), 
-                  // Utilise le formatage du statut (car il n'a pas échoué).
-                }
+                // On renvoie un nouvel objet facture, en incluant toutes les propriétés originales de `doc` avec l'opérateur `...doc`.
+                // La date est formatée via la fonction `formatDate`, et on stocke également la date brute sous `rawDate` pour le tri.
+                // Le statut est formaté via la fonction `formatStatus`.
+                return {
+                  ...doc, // Récopie toutes les propriétés de `doc` dans le nouvel objet facture.
+                  date: formatDate(doc.date), // La date est formatée pour être affichée de manière lisible dans l'UI.
+                  rawDate: doc.date, // On conserve la date brute (non formatée) pour effectuer des opérations de tri.
+                  status: formatStatus(doc.status) // Le statut de la facture est également formaté pour être affiché de manière plus lisible.
+                };
+              } catch (e) {
+                // Gestion d'erreurs : Si une erreur survient lors du formatage (exemple : une date mal formée), on capture l'exception.
+                console.log('Erreur lors du mapping de la facture:', e, 'for', doc);
+                
+                // En cas d'erreur, on renvoie l'objet `doc` sans formatage de la date (on garde la date brute) pour éviter que l'erreur ne bloque tout.
+                return {
+                  ...doc, // On recopie les propriétés d'origine de `doc`.
+                  date: doc.date, // Si le formatage échoue, on conserve la date brute.
+                  status: formatStatus(doc.status) // Le statut est formaté même en cas d'erreur sur la date.
+                };
               }
-            })
-
-          const sortedBills = bills.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate)) 
-          // Trie les factures par date décroissante (les plus récentes en premier).
-
-          return sortedBills 
-          // Retourne les factures triées.
-        })
+            });
+  
+          // On trie les factures par date décroissante (de la plus récente à la plus ancienne) en utilisant la date brute (`rawDate`).
+          // `new Date(b.rawDate) - new Date(a.rawDate)` compare les dates sous forme d'objets `Date`.
+          return bills.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+        });
     }
-  }
+  };
+  
 }
   
