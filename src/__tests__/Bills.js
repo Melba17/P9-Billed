@@ -15,11 +15,9 @@ import router from "../app/Router.js";
 // Ajout d'un Mock du store pour simuler la récupération des factures. Cela permet de contrôler les données retournées par l'API sans dépendre d'une vraie base de données
 jest.mock("../app/store", () => mockStore);
 
-////////// DIFFERENTS TESTS EMPLOYÉ //////////
+
 describe("Given I am connected as an employee", () => {
-
   describe("When I am on Bills Page", () => {
-
     // TEST D'INTEGRATION : Simule l'affichage de la page des factures et vérifie que l'icône de la facture dans le menu vertical est mise en surbrillance
     test("Then bill icon in vertical layout should be highlighted", async () => {
       // Simule un utilisateur employé connecté en configurant localStorage pour stocker les informations de l'utilisateur
@@ -39,38 +37,34 @@ describe("Given I am connected as an employee", () => {
       // Le test attend que l'icône de facture, identifiée par data-testid="icon-window", soit rendue dans le DOM
       await waitFor(() => screen.getByTestId('icon-window')); // TEST D'INTEGRATION
       const windowIcon = screen.getByTestId('icon-window');
-      
       // Ajout de l'assertion pour vérifier que l'icône de la fenêtre facture (barre latérale de gauche) est mise en surbrillance avec la classe 'active-icon'
       expect(windowIcon.classList.contains('active-icon')).toBe(true);  // TEST D'INTEGRATION
     });
+
 
     // TEST D'INTEGRATION GET (getBills) : Vérifie que les factures sont triées dans l'ordre décroissant
 test("Then bills should be ordered from latest to earliest", async () => {
   // Création d'une nouvelle instance de la classe Bills, en simulant les dépendances (document, onNavigate, store et localStorage)
   // jest.fn() est utilisé pour simuler la fonction de navigation `onNavigate`, et `mockStore` simule le store utilisé pour récupérer les factures.
   const billsInstance = new Bills({ document, onNavigate: jest.fn(), store: mockStore, localStorage: window.localStorage });
-  
   // Appel de la méthode asynchrone `getBills()` pour récupérer les factures. 
   // La méthode renvoie une promesse que l'on résout ici avec `await` pour s'assurer que les factures sont bien récupérées avant de continuer.
   const bills = await billsInstance.getBills(); // Les factures sont déjà triées ici
-
   // On extrait uniquement les dates brutes (rawDate) des factures récupérées.
   // `bills.map(bill => bill.rawDate)` crée un nouveau tableau qui ne contient que les dates brutes, sans le reste des informations des factures.
   const dates = bills.map(bill => bill.rawDate); // On récupère les dates brutes triées
-  
-  // Fonction de tri anti-chronologique.
+
+  // Fonction de tri anti-chronologique ou manière de trier
   // Cette fonction compare deux dates converties en objets `Date`. Si `a` (la première date) est plus récente que `b`, on renvoie -1, sinon 1.
-  // Cela permet de trier les dates dans l'ordre décroissant (du plus récent au plus ancien).
+  // Cela permet de trier les dates dans l'ordre décroissant (du plus récent au plus ancien)
   const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);
-  
-  // On trie le tableau `dates` extrait plus haut en utilisant la fonction de tri `antiChrono`.
-  // `...dates` crée une copie du tableau `dates` pour ne pas modifier l'original, puis on applique `sort(antiChrono)` pour trier les dates.
+
+  // `...dates` crée une copie du tableau `dates` pour ne pas modifier l'original, puis on applique `sort(antiChrono)` pour trier effectivement les dates à l'aide d'antiChrono.
   const datesSorted = [...dates].sort(antiChrono);
-  console.log(datesSorted);
   
-  // Vérification que le tableau `dates` est bien trié dans l'ordre décroissant en le comparant au tableau trié `datesSorted`.
+  // // Le test vérifie lui-même que le tableau `dates` est bien trié dans l'ordre décroissant en le comparant au tableau trié `datesSorted`.
   // Si `dates` et `datesSorted` sont égaux, cela signifie que les dates étaient déjà dans le bon ordre (anti-chronologique).
-  expect(dates).toEqual(datesSorted); // On vérifie que les dates sont bien triées dans l'ordre décroissant
+  expect(dates).toEqual(datesSorted); 
 });
 
     
@@ -78,30 +72,24 @@ test("Then bills should be ordered from latest to earliest", async () => {
 
     test("fetches bills from mock API GET", async () => {
       // Simule la connexion d'un utilisateur employé
-      localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "employee@test.tld" }));
-      
+      localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "employee@test.tld" })); 
       // Crée un conteneur div pour l'application et l'ajoute au DOM
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.append(root);
-      
       // Initialise le routeur
       router();
-      
       // Simule la navigation vers la page des factures
       window.onNavigate(ROUTES_PATH.Bills);
-      
       // Attend que l'élément "Mes notes de frais" apparaisse dans le DOM
       await waitFor(() => screen.getByText("Mes notes de frais"));
-      
+  
       // Vérifie que les factures en attente sont bien affichées
       const contentPending = screen.getAllByText("En attente");
       expect(contentPending.length).toBeGreaterThan(0);
-    
       // Vérifie que les factures validées sont bien affichées
       const contentAccepted = screen.getAllByText("Accepté");
       expect(contentAccepted.length).toBeGreaterThan(0);
-    
       // Vérifie que les factures refusées sont bien affichées
       const contentRefused = screen.getAllByText("Refusé");
       expect(contentRefused.length).toBeGreaterThan(0);
@@ -112,11 +100,9 @@ test("Then bills should be ordered from latest to earliest", async () => {
     describe("When I click on the 'new bill' button", () => {
       // On simule la fonction de navigation
       const onNavigate = jest.fn();
-    
       test("Then it should navigate to NewBill page", () => {
         // On injecte le HTML de BillsUI avec des données de factures
         document.body.innerHTML = BillsUI({ data: bills });
-    
         // On crée une instance de Bills
         new Bills({
           document,
@@ -124,12 +110,10 @@ test("Then bills should be ordered from latest to earliest", async () => {
           store: null,
           localStorage: window.localStorage,
         });
-    
         // On récupère le bouton "Nouvelle note de frais"
         const newBillButton = screen.getByTestId("btn-new-bill");
         // On simule le clic sur le bouton
         userEvent.click(newBillButton);  // TEST D'INTEGRATION (CAR ON SIMULE UNE INTERACTION UTILISATEUR)
-        
         // On vérifie que la fonction de navigation a bien été appelée avec le bon chemin
         expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["NewBill"]);  // TEST D'INTEGRATION
       });
@@ -139,7 +123,6 @@ test("Then bills should be ordered from latest to earliest", async () => {
       test("Then the modal should open", () => {
         // On injecte le HTML de BillsUI avec des données de factures
         document.body.innerHTML = BillsUI({ data: bills });
-    
         // On crée une instance de Bills
         new Bills({
           document,
@@ -147,15 +130,12 @@ test("Then bills should be ordered from latest to earliest", async () => {
           store: null,
           localStorage: window.localStorage,
         });
-    
         // On mock la fonction modal de Bootstrap
         $.fn.modal = jest.fn();
-    
         // On récupère la première icône "œil"
         const iconEye = screen.getAllByTestId("icon-eye")[0];
         // On simule le clic sur l'icône "œil"
         userEvent.click(iconEye);  // TEST D'INTEGRATION (INTERACTION AVEC LE DOM)
-        
         // On vérifie que la fonction modal a bien été appelée
         expect($.fn.modal).toHaveBeenCalled();  // TEST D'INTEGRATION
       });

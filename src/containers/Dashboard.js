@@ -201,7 +201,6 @@ export default class {
   handleShowTickets(e, bills, index) {
     e.preventDefault(); // Empêche le comportement par défaut du formulaire ou du bouton.
     e.stopPropagation(); // Empêche la propagation de l'événement à d'autres éléments.
-
     // Initialisation du compteur spécifique à la liste sélectionnée.
     if (this.counters === undefined) {
       this.counters = {}; // Crée un objet pour stocker les compteurs de chaque liste.
@@ -209,12 +208,12 @@ export default class {
     if (this.counters[index] === undefined) {
       this.counters[index] = 0; // Initialise le compteur de la liste actuelle.
     }
-  
+    // Filtrer les factures par statut avant de les afficher
+    const filteredBillsList = filteredBills(bills, getStatus(index));
     // Si c'est un clic pair, affiche les factures pour le statut spécifié.
     if (this.counters[index] % 2 === 0) {
       $(`#arrow-icon${index}`).css({ transform: 'rotate(0deg)' });
-      $(`#status-bills-container${index}`)
-        .html(cards(filteredBills(bills, getStatus(index)))); // Affiche les cartes des factures filtrées.
+      $(`#status-bills-container${index}`).html(cards(filteredBillsList)); // Affiche les cartes des factures filtrées.
       this.counters[index]++;
     } else {
       // Sinon, cache les factures pour ce statut.
@@ -222,19 +221,15 @@ export default class {
       $(`#status-bills-container${index}`).html("");
       this.counters[index]++;
     }
-  
-    // Pour chaque facture affichée, on s'assure de nettoyer et de réassigner les événements de clic correctement.
-    filteredBills(bills, getStatus(index)).forEach(bill => {
+    // Pour chaque facture filtrée, on s'assure de nettoyer et de réassigner les événements de clic correctement.
+    filteredBillsList.forEach(bill => {
       $(`#open-bill${bill.id}`).off('click').on('click', (e) => {
         e.stopPropagation(); // Empêche la propagation de l'événement de clic à d'autres éléments.
-        this.handleEditTicket(e, bill, bills);
+        this.handleEditTicket(e, bill, filteredBillsList); // Passe seulement les factures filtrées ici.
       });
     });
-  
-    return bills; // Retourne la liste de factures, utile pour les tests.
-  }
-  
-  
+    return filteredBillsList; // Retourne la liste des factures filtrées, utile pour les tests.
+}
 
   // Méthode pour récupérer toutes les factures de tous les utilisateurs depuis le store.
   getBillsAllUsers = () => {

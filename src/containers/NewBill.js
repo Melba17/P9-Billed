@@ -23,7 +23,6 @@ export default class NewBill { // Définition de la classe NewBill qui gère la 
     const fileName = file.name; // Récupération du nom du fichier
     const formData = new FormData(); // Création d'un objet FormData pour envoyer le fichier avec d'autres données
     const email = JSON.parse(localStorage.getItem("user")).email; // Récupération de l'email de l'utilisateur à partir du localStorage
-
     const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i; // Définition des extensions de fichiers autorisées (images)
     // /.../ entourent l'expression régulière ; Le backslash \. pour signifier "un point littéral"; jpg|jpeg|png pour les extensions autorisées avec  l'opérateur "OU" => | ; $ signifie "fin de la chaîne" ; i pour signifier que la recherche est insensible à la casse Maj ou min
     if (!allowedExtensions.test(fileName)) { // Vérification que l'extension du fichier est valide
@@ -31,7 +30,6 @@ export default class NewBill { // Définition de la classe NewBill qui gère la 
       e.target.value = ''; // Réinitialisation de l'input fichier
       return; // Sortie de la fonction si l'extension n'est pas valide
     }
-
     formData.append('file', file); // Ajout du fichier à l'objet FormData
     formData.append('email', email); // Ajout de l'email de l'utilisateur à l'objet FormData
 
@@ -48,7 +46,9 @@ export default class NewBill { // Définition de la classe NewBill qui gère la 
       const cleanedFilePath = response.filePath ? response.filePath.replace(/\\/g, '/') : ''; // Nettoyage du chemin de fichier (remplacement des backslashes par des slashes)
       // /\\/g = 1er arg => \\ échappement du backslash ; g signifie "global", ce qui indique que nous voulons remplacer tous les backslashes dans la chaîne, pas seulement le premier trouvé
       // '/' (le second argument de replace) => C'est la chaîne (slash) par laquelle nous voulons remplacer les backslashes
-      this.fileUrl = response.fileUrl || `http://yourserver.com/${cleanedFilePath}/${response.fileName}`; // Construction de l'URL du fichier
+
+      // Si le serveur renvoie une URL complète du fichier dans response.fileUrl, elle est utilisée telle quelle..
+      this.fileUrl = response.fileUrl || `http://yourserver.com/${cleanedFilePath}/${response.fileName}`; // ..Ou construction de l'URL du fichier
 
     } catch (error) {
       console.error('Erreur lors de la création de la facture avec le fichier:', error); // Affichage d'une erreur dans la console en cas d'échec
@@ -58,9 +58,7 @@ export default class NewBill { // Définition de la classe NewBill qui gère la 
 
   handleSubmit = async (e) => { // Méthode asynchrone pour gérer la soumission du formulaire
     e.preventDefault(); // Empêche le comportement par défaut lors de la soumission du formulaire
-
     const email = JSON.parse(localStorage.getItem("user")).email; // Récupération de l'email de l'utilisateur à partir du localStorage
-
     if (!this.fileUrl || !this.fileName) { // Vérifie si un fichier a été correctement sélectionné
       alert('Veuillez télécharger un fichier valide avant de soumettre la note de frais.'); // Affiche une alerte si aucun fichier n'a été sélectionné
       return; // Sortie de la fonction si les fichiers ne sont pas valides

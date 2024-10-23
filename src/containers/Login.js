@@ -29,10 +29,11 @@ export default class Login {
       password: e.target.querySelector(`input[data-testid="employee-password-input"]`).value,
       status: "connected"
     }
+
     this.localStorage.setItem("user", JSON.stringify(user))
     this.login(user)
       .catch(
-        (err) => this.createUser(user)
+        () => this.createUser(user)
       )
       .then(() => {
         this.onNavigate(ROUTES_PATH['Bills'])
@@ -45,27 +46,40 @@ export default class Login {
 
   // ADMIN
   handleSubmitAdmin = e => {
+    // La fonction est assignée à une variable et sera déclenchée lors de la soumission d'un formulaire d'admin. 
     e.preventDefault()
+    // Empêche le comportement par défaut du formulaire (soumission de page).
     const user = {
-      type: "Admin",
+      type: "Admin", // Définit un objet utilisateur avec le type "Admin" pour spécifier qu'il s'agit d'un administrateur.
       // Bug 2 : Valeurs de Login modifiées => admin au lieu d'employee
       email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value,
+      // Récupère la valeur de l'email depuis l'input correspondant à l'email de l'administrateur.  
       password: e.target.querySelector(`input[data-testid="admin-password-input"]`).value,
+      // Récupère la valeur du mot de passe depuis l'input correspondant au mot de passe de l'administrateur.
       status: "connected"
+      // Définit le statut de l'utilisateur comme "connected", indiquant que l'utilisateur est maintenant connecté.
     }
+
     // Vérif des valeurs stockées
     this.localStorage.setItem("user", JSON.stringify(user))
+    // Stocke l'objet `user` dans le localStorage du navigateur, sous forme de chaîne JSON, afin de persister les informations de connexion.
     this.login(user)
-      .catch(
-        (err) => this.createUser(user)
+      .catch(() => this.createUser(user)
       )
+      // Appelle la méthode `login` avec l'objet utilisateur. Si cela échoue (par exemple, si l'utilisateur n'existe pas),
+      // il attrape l'erreur et appelle `createUser` pour créer un nouvel utilisateur avec les mêmes informations.
       .then(() => {
         this.onNavigate(ROUTES_PATH['Dashboard'])
+        // Une fois connecté ou l'utilisateur créé, redirige vers le tableau de bord ('Dashboard') via la méthode `onNavigate`.
         this.PREVIOUS_LOCATION = ROUTES_PATH['Dashboard']
+        // Met à jour la propriété `PREVIOUS_LOCATION` avec le chemin du tableau de bord, pour garder une trace de la dernière page visitée.
         PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
-        document.body.style.backgroundColor="#fff"
+        // Assigne la valeur de `this.PREVIOUS_LOCATION` à la variable globale `PREVIOUS_LOCATION` (elle est définie ailleurs dans le code).  
+        document.body.style.backgroundColor = "#fff"
+        // Change le fond de la page en blanc, probablement pour réinitialiser l'apparence après la connexion.
       })
   }
+  
 
   // not need to cover this function by tests
   login = (user) => {
@@ -76,7 +90,7 @@ export default class Login {
         email: user.email,
         password: user.password,
       })).then(({jwt}) => {
-        localStorage.setItem('jwt', jwt)
+        localStorage.setItem('jwt', jwt) // JWT (JSON Web Token) utilisé pour représenter des informations de manière compacte et sécurisée sous forme de JSON (JavaScript Object Notation) - Après une connexion réussie (en l'occurrence après avoir soumis un email et un mot de passe), le serveur génère un JWT et est ensuite renvoyé au client (ici l'application) et peut être stocké dans le localStorage
       })
     } else {
       return null
