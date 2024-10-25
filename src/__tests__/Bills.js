@@ -60,17 +60,16 @@ test("Then bills should be ordered from latest to earliest", async () => {
   const antiChrono = (a, b) => (new Date(a) > new Date(b) ? -1 : 1);
 
   // `...dates` crée une copie du tableau `dates` pour ne pas modifier l'original, puis on applique `sort(antiChrono)` pour trier effectivement les dates à l'aide d'antiChrono.
-  const datesSorted = [...dates].sort(antiChrono);
+  const sortedDates = [...dates].sort(antiChrono);
   
   // // Le test vérifie lui-même que le tableau `dates` est bien trié dans l'ordre décroissant en le comparant au tableau trié `datesSorted`.
   // Si `dates` et `datesSorted` sont égaux, cela signifie que les dates étaient déjà dans le bon ordre (anti-chronologique).
-  expect(dates).toEqual(datesSorted); 
+  expect(dates).toEqual(sortedDates); 
 });
 
     
-    ///// NOUVEAU TEST D'INTEGRATION GET : se concentre sur la récupération des factures pour un utilisateur employé depuis l'API simulée (mockStore). Cela permet de vérifier que les factures sont correctement récupérées et affichées pour un utilisateur employé connecté /////// 
-
-    test("fetches bills from mock API GET", async () => {
+    ///// TEST D'INTEGRATION GET : se concentre sur la récupération des factures pour un utilisateur employé depuis l'API simulée (mockStore). Cela permet de vérifier que les factures sont correctement récupérées et affichées pour un utilisateur employé connecté /////// 
+    test("Then fetches bills from mock API GET", async () => {
       // Simule la connexion d'un utilisateur employé
       localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "employee@test.tld" })); 
       // Crée un conteneur div pour l'application et l'ajoute au DOM

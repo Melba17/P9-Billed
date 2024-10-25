@@ -8,13 +8,12 @@ import Logout from "./Logout.js"
 // Ce fichier définit une classe JS qui est principalement responsable de la gestion des factures dans le tableau de bord administratif de l'application. Il permet à un administrateur de visualiser, filtrer, éditer et mettre à jour les factures soumises par les employés, et il inclut la gestion des événements liés à l'interface utilisateur pour accomplir ces tâches
 // Outil complet pour un administrateur, lui permettant de gérer les factures soumises par les employés et de prendre des décisions concernant leur validation ou leur rejet
 
-// Fonction qui filtre les factures en fonction de leur statut et exclut celles des utilisateurs de test.
+// Fonction qui filtre les factures en fonction de leur statut 
 export const filteredBills = (data, status) => {
   // Si les données sont définies et que la liste de factures n'est pas vide, filtre les factures.
   return (data && data.length) ?
     data.filter(bill => {
       let selectCondition
-
       // Vérifie si le code s'exécute dans un environnement de test (Jest est une bibliothèque de tests).
       if (typeof jest !== 'undefined') {
         // Si oui, filtre les factures dont le statut correspond au statut demandé.
@@ -32,7 +31,6 @@ export const filteredBills = (data, status) => {
           (bill.status === status) &&
           ![...USERS_TEST, userEmail].includes(bill.email)
       }
-
       // Retourne la condition pour filtrer la facture.
       return selectCondition
     }) : []
@@ -115,11 +113,12 @@ export default class {
 
   // Méthode pour gérer l'édition d'une facture lorsqu'un administrateur clique dessus
   handleEditTicket(e, bill, bills) {
+    e.preventDefault();
+    e.stopPropagation();
     // Si l'objet "counters" n'est pas encore défini, on le crée pour stocker un compteur pour chaque facture.
     if (this.counters === undefined) {
       this.counters = {}; // Crée un objet pour stocker les compteurs spécifiques à chaque facture.
     }
-    
     // Si le compteur pour la facture sélectionnée n'est pas encore initialisé, on le met à 0.
     if (this.counters[bill.id] === undefined) {
       this.counters[bill.id] = 0; // Initialise le compteur spécifique à la facture sélectionnée.
@@ -127,44 +126,36 @@ export default class {
     
     // Si le compteur pour cette facture est un multiple de 2 (premier clic ou après chaque deuxième clic).
     if (this.counters[bill.id] % 2 === 0) {
-        // Pour chaque facture, on remet l'arrière-plan à la couleur bleue pour désélectionner visuellement.
+        // Permet de "désélectionner" visuellement toutes les factures avant de se concentrer sur celle que l'utilisateur souhaite éditer et garantit qu'il n'y a pas de conflit visuel si plusieurs factures ont été sélectionnées précédemment. Le fond bleu indique que ces factures ne sont plus en cours d'édition => réinitialisation globale
         bills.forEach(b => {
             $(`#open-bill${b.id}`).css({ background: '#0D5AE5' });
         });
 
-        // Pour la facture sélectionnée, on change la couleur de fond pour indiquer qu'elle est en cours d'édition.
+        // Mise en évidence de la facture sélectionnée par l'utilisateur: on change la couleur de fond (noir) pour indiquer qu'elle est en cours d'édition. Cela assure que seule la facture sélectionnée est visuellement différenciée des autres
         $(`#open-bill${bill.id}`).css({ background: '#2A2B35' });
-        
         // On affiche le formulaire de détails de la facture dans la partie droite du tableau de bord.
         $('.dashboard-right-container div').html(DashboardFormUI(bill));
-        
         // On ajuste la hauteur de la barre de navigation verticale pour correspondre à l'affichage de la facture.
         $('.vertical-navbar').css({ height: '150vh' });
-        
         // On incrémente le compteur spécifique à cette facture.
         this.counters[bill.id]++;
     } else {
         // Si le compteur n'est pas un multiple de 2 (deuxième clic), on réinitialise l'arrière-plan à la couleur bleue.
         $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' });
-        
         // On affiche une grande icône à la place du formulaire, indiquant qu'aucune facture n'est en cours d'édition.
         $('.dashboard-right-container div').html(`
             <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
         `);
-        
         // On ajuste la hauteur de la barre de navigation verticale à 120vh pour correspondre à l'affichage par défaut.
         $('.vertical-navbar').css({ height: '120vh' });
-        
         // On incrémente à nouveau le compteur pour cette facture.
         this.counters[bill.id]++;
     }
 
     // Attache un événement "click" à l'icône pour afficher la facture en grand format (en modal).
     $('#icon-eye-d').click(this.handleClickIconEye);
-    
     // Attache un événement "click" au bouton d'acceptation pour accepter la facture sélectionnée.
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill));
-    
     // Attache un événement "click" au bouton de refus pour refuser la facture sélectionnée.
     $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill));
   }
@@ -208,27 +199,28 @@ export default class {
     if (this.counters[index] === undefined) {
       this.counters[index] = 0; // Initialise le compteur de la liste actuelle.
     }
-    // Filtrer les factures par statut avant de les afficher
+    // Filtrer les factures par statut avant de les afficher donc n'affiche que les factures pertinentes pour chaque statut
     const filteredBillsList = filteredBills(bills, getStatus(index));
-    // Si c'est un clic pair, affiche les factures pour le statut spécifié.
+    // Si c'est un clic pair, affiche les factures pour le statut spécifique
     if (this.counters[index] % 2 === 0) {
       $(`#arrow-icon${index}`).css({ transform: 'rotate(0deg)' });
-      $(`#status-bills-container${index}`).html(cards(filteredBillsList)); // Affiche les cartes des factures filtrées.
+      $(`#status-bills-container${index}`).html(cards(filteredBillsList)); // Affiche les cartes des factures filtrées
       this.counters[index]++;
     } else {
-      // Sinon, cache les factures pour ce statut.
+      // Sinon, cache les factures pour ce statut
       $(`#arrow-icon${index}`).css({ transform: 'rotate(90deg)' });
       $(`#status-bills-container${index}`).html("");
       this.counters[index]++;
     }
-    // Pour chaque facture filtrée, on s'assure de nettoyer et de réassigner les événements de clic correctement.
+    // Pour chaque facture filtrée, on s'assure de nettoyer et de réassigner les événements de clic correctement
     filteredBillsList.forEach(bill => {
+      // Réaffecte les événements click uniquement aux factures filtrées. Utilise .off('click') pour s'assurer qu'aucun événement de clic précédemment défini n'interfère, puis ajoute .on('click') pour réassigner correctement l'événement au clic sur une facture spécifique
       $(`#open-bill${bill.id}`).off('click').on('click', (e) => {
-        e.stopPropagation(); // Empêche la propagation de l'événement de clic à d'autres éléments.
-        this.handleEditTicket(e, bill, filteredBillsList); // Passe seulement les factures filtrées ici.
+        e.stopPropagation(); // Empêche la propagation de l'événement de clic à d'autres éléments
+        this.handleEditTicket(e, bill, filteredBillsList); // Passe seulement les factures filtrées ici
       });
     });
-    return filteredBillsList; // Retourne la liste des factures filtrées, utile pour les tests.
+    return filteredBillsList; // Retourne la liste filtrée des factures qui correspond au statut actuel
 }
 
   // Méthode pour récupérer toutes les factures de tous les utilisateurs depuis le store.

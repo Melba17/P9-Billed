@@ -6,10 +6,41 @@
 import { screen, fireEvent } from "@testing-library/dom"; // Outils pour simuler les interactions DOM
 import NewBillUI from "../views/NewBillUI.js"; // Interface utilisateur de la page NewBill
 import NewBill from "../containers/NewBill.js"; // Logique métier de NewBill
+import { validateFileExtension } from '../containers/NewBill.js'; // Import de validateFileExtension en tant que fonction
 import { ROUTES_PATH } from '../constants/routes.js'; // Import des chemins de navigation
 import mockStore from "../__mocks__/store.js"; // Mock de la gestion du store pour simuler les appels API
 
 jest.mock("../app/store", () => mockStore);  // Moquer le store avec mockStore
+
+// TESTS UNITAIRES
+// Définition du bloc principal de test : contexte dans lequel l'utilisateur télécharge un fichier
+describe("Given the user uploads a file", () => {
+  // Sous-bloc pour tester le cas où le fichier a une extension valide
+  describe("When the file has a valid extension", () => {
+    // Test unitaire vérifiant que la fonction retourne true pour des extensions valides
+    test("Then validateFileExtension should return true", () => { 
+      // Vérifie que validateFileExtension retourne true pour un fichier avec l'extension .jpg
+      expect(validateFileExtension("photo.jpg")).toBe(true);
+      // Vérifie que validateFileExtension retourne true pour un fichier avec l'extension .jpeg
+      expect(validateFileExtension("photo.jpeg")).toBe(true);
+      // Vérifie que validateFileExtension retourne true pour un fichier avec l'extension .png
+      expect(validateFileExtension("photo.png")).toBe(true);
+    });
+  });
+
+  // Sous-bloc pour tester le cas où le fichier a une extension invalide
+  describe("When the file has an invalid extension", () => {
+    // Test unitaire vérifiant que la fonction retourne false pour des extensions non autorisées
+    test("Then validateFileExtension should return false", () => {
+      // Vérifie que validateFileExtension retourne false pour un fichier avec l'extension .pdf
+      expect(validateFileExtension("document.pdf")).toBe(false);
+      // Vérifie que validateFileExtension retourne false pour un fichier avec l'extension .gif
+      expect(validateFileExtension("image.gif")).toBe(false);
+      // Vérifie que validateFileExtension retourne false pour un fichier avec l'extension .txt
+      expect(validateFileExtension("file.txt")).toBe(false);
+    });
+  });
+});
 
 // DÉBUT DU BLOC "DESCRIBE" POUR LA CONNEXION EMPLOYÉ (GIVEN)
 describe("Given I am connected as an employee", () => {
@@ -37,7 +68,7 @@ describe("Given I am connected as an employee", () => {
       const form = screen.getByTestId("form-new-bill"); // Récupère le formulaire via son data-testid
       expect(form).toBeTruthy(); // Vérifie que le formulaire est présent dans le DOM
     });
-    // TEST UNITAIRE : UPLOAD D'UN FICHIER VALIDE
+    // TEST D'INTEGRATION : UPLOAD D'UN FICHIER VALIDE
     describe("When I upload a valid file", () => {
       test("Then it should be processed", async () => {
         // Récupère l'input pour le fichier  
@@ -81,7 +112,7 @@ describe("Given I am connected as an employee", () => {
       });
     });
 
-    // TEST UNITAIRE : SOUMISSION SANS FICHIER
+    // TEST D'INTEGRATION : SOUMISSION SANS FICHIER
     describe("When I submit the form without a file", () => {
       test("Then an alert should be shown", () => {
         const form = screen.getByTestId("form-new-bill"); // Récupère le formulaire
@@ -91,7 +122,7 @@ describe("Given I am connected as an employee", () => {
       });
     });
 
-    // TEST UNITAIRE : UPLOAD D'UN FICHIER NON VALIDE
+    // TEST D'INTEGRATION : UPLOAD D'UN FICHIER NON VALIDE
     describe("When I upload an invalid file", () => {
       test("Then an alert should be shown", () => {
         const fileInput = screen.getByTestId("file"); // Récupère l'input du fichier
