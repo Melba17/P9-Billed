@@ -66,6 +66,7 @@ const mockedBills = {
   },
   
   create(bill) {
+    // Cette ligne est ajoutée pour permettre à la méthode create de prendre en compte les données envoyées par FormData, notamment le fichier téléchargé, ce qui rend la simulation du backend plus précise et adaptable aux données réelles fournies par l'utilisateur, au lieu d'une valeur fixe
     // Récupère le fichier depuis l'objet FormData
     const file = bill.data.get('file');  
     
@@ -73,28 +74,29 @@ const mockedBills = {
     return Promise.resolve({
       // URL du fichier après sa création (simulée)
       fileUrl: 'https://localhost:3456/images/test.jpg',
-      // Clé unique générée pour la facture
+      // Clé unique générée pour la facture - key agit en tant qu'identifiant temporaire pendant la phase de création et de soumission de la facture au backend (manipulation temporaire)
       key: '1234',
+      // Simule une réponse plus réaliste du backend en renvoyant le nom exact du fichier envoyé
       // Utilise le nom du fichier si disponible, sinon attribue 'photo.jpg' par défaut
       fileName: file ? file.name : 'photo.jpg'  
     });
   },
 
-update(bill) {
-    // Retourne une promesse résolue simulant la mise à jour d'une facture existante
-    return Promise.resolve({
-      // Fusionne les données de la facture avec les nouvelles données (spread operator)
-      ...bill,  
-      // Garde l'ID de la facture, nécessaire pour identifier la facture dans le backend
-      id: "47qAXb6fIm2zOKkLzMro",  
-      // Utilise l'URL du fichier si elle est déjà présente, sinon fournit une URL par défaut
-      fileUrl: bill.fileUrl || "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg",  
-      // Utilise le statut de la facture si présent, sinon définit le statut par défaut à "pending"
-      status: bill.status || "pending",  
-      // Conserve l'email de l'utilisateur ou définit une valeur par défaut
-      email: bill.email || "a@a",  
-    });
-  }
+  update(bill) {
+      // Mise à jour du backend avec la note de frais nouvellement créée 
+      return Promise.resolve({
+        // Fusionne les données de la facture avec les nouvelles données (spread operator)
+        ...bill,  
+        // Une fois que le backend enregistre la facture de manière définitive, key (au-dessus) est remplacée par un id permanent ce qui permet d'identifier la facture dans le backend. Identifiant officiel et stable de la facture
+        id: "47qAXb6fIm2zOKkLzMro",  
+        // Utilise l'URL du fichier si elle est déjà présente, sinon fournit une URL par défaut
+        fileUrl: bill.fileUrl || "https://firebasestorage.googleapis.com/v0/b/billable-677b6.a…f-1.jpg",  
+        // Utilise le statut de la facture si présent, sinon définit le statut par défaut à "pending"
+        status: bill.status || "pending",  
+        // Conserve l'email de l'utilisateur ou définit une valeur par défaut
+        email: bill.email || "a@a",  
+      });
+    }
 }
 
 export default {

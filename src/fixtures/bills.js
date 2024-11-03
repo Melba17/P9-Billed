@@ -1,4 +1,4 @@
-// Stockage de données dépenses
+// Stockage de données prédéfinies statiques et indépendantes (ici 4 notes de frais en exemple)
 export const bills = [{
   "id": "47qAXb6fIm2zOKkLzMro",
   "vat": "80",

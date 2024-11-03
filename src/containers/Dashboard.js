@@ -5,7 +5,7 @@ import { ROUTES_PATH } from '../constants/routes.js'
 import USERS_TEST from '../constants/usersTest.js'
 import Logout from "./Logout.js"
 
-// Ce fichier définit une classe JS qui est principalement responsable de la gestion des factures dans le tableau de bord administratif de l'application. Il permet à un administrateur de visualiser, filtrer, éditer et mettre à jour les factures soumises par les employés, et il inclut la gestion des événements liés à l'interface utilisateur pour accomplir ces tâches
+// Ce fichier définit une classe JS qui est principalement responsable de la gestion des factures dans le tableau de bord administrateur de l'application. Il permet à l'admin de visualiser, filtrer, éditer et mettre à jour les factures soumises par les employés, et il inclut la gestion des événements liés à l'interface utilisateur pour accomplir ces tâches
 // Outil complet pour un administrateur, lui permettant de gérer les factures soumises par les employés et de prendre des décisions concernant leur validation ou leur rejet
 
 // Fonction qui filtre les factures en fonction de leur statut 
@@ -190,7 +190,7 @@ export default class {
   // BUG 4
   // Méthode pour afficher ou masquer les factures selon leur statut quand l'icône est cliquée.
   handleShowTickets(e, bills, index) {
-    e.preventDefault(); // Empêche le comportement par défaut du formulaire ou du bouton.
+    e.preventDefault(); // empêche toute action par défaut qui pourrait être associée à un élément déclencheur lié aux autres méthodes de la classe, comme un rechargement de page, ce qui permet de maintenir l'affichage de la page actuel sans interruption.
     e.stopPropagation(); // Empêche la propagation de l'événement à d'autres éléments.
     // Initialisation du compteur spécifique à la liste sélectionnée.
     if (this.counters === undefined) {
@@ -214,7 +214,7 @@ export default class {
     }
     // Pour chaque facture filtrée, on s'assure de nettoyer et de réassigner les événements de clic correctement
     filteredBillsList.forEach(bill => {
-      // Réaffecte les événements click uniquement aux factures filtrées. Utilise .off('click') pour s'assurer qu'aucun événement de clic précédemment défini n'interfère, puis ajoute .on('click') pour réassigner correctement l'événement au clic sur une facture spécifique
+      // Réaffecte les événements click uniquement aux factures filtrées. Utilise .off('click') pour s'assurer qu'aucun événement de clic précédemment défini n'interfère, puis ajoute .on('click') pour réassigner correctement l'événement de clic sur une facture spécifique
       $(`#open-bill${bill.id}`).off('click').on('click', (e) => {
         e.stopPropagation(); // Empêche la propagation de l'événement de clic à d'autres éléments
         this.handleEditTicket(e, bill, filteredBillsList); // Passe seulement les factures filtrées ici

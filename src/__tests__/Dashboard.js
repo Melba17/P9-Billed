@@ -13,7 +13,7 @@ import mockStore from "../__mocks__/store"
 import { bills } from "../fixtures/bills"
 import router from "../app/Router"
 
-// Tableau de bord (Dashboard) destiné à un utilisateur ayant un rôle d'administrateur (Admin)
+// Tableau de bord (Dashboard) destiné à un utilisateur administrateur (Admin)
 // Le fichier de test contient une combinaison de tests unitaires (vérification du filtrage, du chargement et des erreurs) et de tests d'intégration (vérification du comportement de l'interface lors des interactions utilisateur et de la gestion des appels API). Il s'agit d'assurer que toutes les fonctionnalités clés du tableau de bord fonctionnent comme prévu et que les erreurs sont bien gérées, tout en simulant différentes conditions de l'interface et de l'API
 
 jest.mock("../app/store", () => mockStore)

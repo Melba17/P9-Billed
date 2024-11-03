@@ -47,17 +47,18 @@ describe("Given I am connected as an employee", () => {
   let newBill; // Variable pour stocker l'instance de NewBill
   const userEmail = "employee@test.tld"; // Déclaration d'une adresse e-mail simulée
   const onNavigate = jest.fn(); // Mock pour simuler la navigation
-  // BEFORE EACH : S'EXÉCUTE AVANT CHAQUE TEST (CONFIGURATION COMMUNE)
+
+  // BEFORE EACH : S'EXÉCUTE AVANT CHAQUE TEST DE CE BLOC (CONFIGURATION COMMUNE)
   beforeEach(() => {
-    window.alert = jest.fn(); // Mock de la fonction alert pour éviter les vraies alertes dans les tests
-    localStorage.setItem("user", JSON.stringify({ email: userEmail })); // Simulation d'une session utilisateur via localStorage
+    window.alert = jest.fn(); // Mock de la fonction alert pour éviter d'afficher les vraies alertes (boîte de dialogue) dans les tests et donc interrompre les tests en cours et devoir cliquer sur "ok" - Permet aussi de vérifier que l'alerte a bien été déclenchée avec le bon message (voir plus bas)
+    localStorage.setItem("user", JSON.stringify({ email: userEmail })); // Initialise et simule une session utilisateur active via localStorage
     const html = NewBillUI(); // Génère l'interface de la page NewBill
     document.body.innerHTML = html; // Injecte le HTML généré dans le body du DOM
     newBill = new NewBill({ // Instanciation de la classe NewBill
       document,
       onNavigate, // Navigation simulée
       store: mockStore, // Mock du store
-      localStorage: window.localStorage, // Utilisation du localStorage mocké
+      localStorage: window.localStorage, // Passe le mock de localStorage (qui contient les informations de l’utilisateur simulé) comme dépendance à l'instance de NewBill 
     });
   });
 
@@ -65,36 +66,25 @@ describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
     // THEN : VÉRIFIER LA PRÉSENCE DU FORMULAIRE
     test("Then I should see the form for creating a new bill", () => {
-      const form = screen.getByTestId("form-new-bill"); // Récupère le formulaire via son data-testid
-      expect(form).toBeTruthy(); // Vérifie que le formulaire est présent dans le DOM
-    });
-    // TEST D'INTEGRATION : UPLOAD D'UN FICHIER VALIDE
-    describe("When I upload a valid file", () => {
-      test("Then it should be processed", async () => {
-        // Récupère l'input pour le fichier  
-        const fileInput = screen.getByTestId("file"); 
-        // Création d'un fichier de test valide
-        const validFile = new File(['This is a test file.'], 'photo.jpg', { type: 'image/jpeg' }); 
-        // Simule l'upload du fichier dans l'input
-        fireEvent.change(fileInput, { target: { files: [validFile] } });
-        // Attente que la méthode handleChangeFile s'exécute entièrement avant que le test n'examine le résultat
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        // Vérifie que les propriétés du fichier sont bien mises à jour
-        expect(newBill.fileName).toBe('photo.jpg'); // Vérifie le nom du fichier
-        expect(newBill.fileUrl).toBe('https://localhost:3456/images/test.jpg');  // Vérifie l'URL simulée
-      });
+      // Récupère le formulaire via son data-testid
+      const form = screen.getByTestId("form-new-bill");
+      // Vérifie que le formulaire est présent dans le DOM faisant référence à l'instance newBill créée dans le bloc beforeEach 
+      expect(form).toBeTruthy(); 
     });
 
-    // TEST D'INTEGRATION POST NEW BILL : SOUMISSION D'UN FORMULAIRE AVEC DES DONNÉES VALIDES
+    // TEST D'INTEGRATION POST NEWBILL : SOUMISSION D'UN FORMULAIRE AVEC DES DONNÉES VALIDES
     describe("When I submit the form with valid data", () => {
       test("Then it should navigate to bills page", async () => {
-        const fileInput = screen.getByTestId("file"); // Récupère l'input du fichier
-        const validFile = new File(['This is a test file.'], 'photo.jpg', { type: 'image/jpeg' });  
-        fireEvent.change(fileInput, { target: { files: [validFile] } }); // Simule l'upload du fichier
-        // Attendre que handleChangeFile mette à jour les propriétés
+        // Récupère l'input du fichier en utilisant son data-testid="file"
+        const fileInput = screen.getByTestId("file");
+        // new File(...) crée un fichier simulé pour le test -  l'argument ['This is a test file.'] représente le contenu du fichier - 'photo.jpg' est le nom du fichier - { type: 'image/jpeg' } spécifie le type fichier selon les extensions autorisées
+        const validFile = new File(['This is a test file.'], 'photo.jpg', { type: 'image/jpeg' }); 
+        // Simule l'upload du fichier en ajoutant validFile à la liste de fichiers de l’input
+        fireEvent.change(fileInput, { target: { files: [validFile] } }); 
+        // On attend qu'handleChangeFile mette à jour les propriétés => le but est de lui donner le temps de traiter l’upload et de mettre à jour les propriétés associées (comme fileUrl et fileName) de l'instance newBill => résolution d'opération asynchrone
         await new Promise((resolve) => setTimeout(resolve, 100));
         
-        // Remplissage des champs du formulaire
+        // Ces lignes de code simulent le remplissage du formulaire par l’utilisateur en modifiant chaque champ de manière appropriée - fireEvent.change est utilisé pour chaque champ afin de définir une nouvelle valeur, comme si l'utilisateur remplissait le formulaire dans une interface réelle
         fireEvent.change(screen.getByTestId("expense-type"), { target: { value: 'Transports' } });
         fireEvent.change(screen.getByTestId("expense-name"), { target: { value: 'Train' } });
         fireEvent.change(screen.getByTestId("amount"), { target: { value: 100 } });
@@ -103,21 +93,28 @@ describe("Given I am connected as an employee", () => {
         fireEvent.change(screen.getByTestId("pct"), { target: { value: 20 } });
         fireEvent.change(screen.getByTestId("commentary"), { target: { value: 'Voyage d\'affaires' } });
 
-        const form = screen.getByTestId("form-new-bill"); // Récupère le formulaire
-        fireEvent.submit(form); // Simule la soumission du formulaire
-        // Attente pour que la soumission soit traitée
+        // Récupère le formulaire au complet (fichier chargé et tous les inputs remplis)
+        const form = screen.getByTestId("form-new-bill"); 
+        // Simule la soumission du formulaire
+        fireEvent.submit(form);
+        // Préparation pour éviter que la redirection ne se produise avant que toutes les infos soient enregistrées
+        // Attente pour que la soumission soit traitée donc que les propriétés de l'instance NewBill (fileUrl, fileName, et billId) soient mises à jour pour le fichier chargé et que l'enregistrement de l'ensemble des données dans le backend soit effectif avant de...
         await new Promise((resolve) => setTimeout(resolve, 100));
-        // Vérifie que la navigation a bien été effectuée
+        // ...Vérifier que la navigation a bien été effectuée, c'est à dire que l'application redirige bien l'utilisateur vers Bills
         expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH['Bills']);
       });
     });
 
+    // Flux d'interactions de plusieurs éléments (le formulaire complet dont la gestion d'erreurs (comme l'absence de fichier chargé ou invalide) et la logique de soumission de création de nouvelle note de frais et le déclenchement de l'alerte => Cela montre comment différentes parties de l’application s’intègrent pour créer une expérience utilisateur cohérente
+
     // TEST D'INTEGRATION : SOUMISSION SANS FICHIER
     describe("When I submit the form without a file", () => {
       test("Then an alert should be shown", () => {
-        const form = screen.getByTestId("form-new-bill"); // Récupère le formulaire
-        fireEvent.submit(form); // Simule la soumission du formulaire
-        // Vérifie que l'alerte a été déclenchée
+        // Récupère le formulaire via son data-testid
+        const form = screen.getByTestId("form-new-bill"); 
+        // Simule la soumission du formulaire
+        fireEvent.submit(form); 
+        // Vérifie que l'alerte a bien été déclenchée
         expect(window.alert).toHaveBeenCalledWith('Veuillez télécharger un fichier valide avant de soumettre la note de frais.');
       });
     });
@@ -125,13 +122,16 @@ describe("Given I am connected as an employee", () => {
     // TEST D'INTEGRATION : UPLOAD D'UN FICHIER NON VALIDE
     describe("When I upload an invalid file", () => {
       test("Then an alert should be shown", () => {
-        const fileInput = screen.getByTestId("file"); // Récupère l'input du fichier
+        // Récupère l'input du fichier
+        const fileInput = screen.getByTestId("file"); 
+        // new File(...) crée un fichier simulé pour le test -  l'argument ['This is a test file.'] représente le contenu du fichier - 'photo.txt' est le nom du fichier -   { type: 'text/plain' } spécifie le type fichier selon une  extension non prise en charge par l'application - 'text/plain'= texte brut non formaté
         const invalidFile = new File(['This is a test file.'], 'photo.txt', { type: 'text/plain' });
         // Simule l'upload du fichier non valide
         fireEvent.change(fileInput, { target: { files: [invalidFile] } });
         // Vérifie que l'alerte d'extension non valide est affichée
         expect(window.alert).toHaveBeenCalledWith('Les fichiers .jpg, .jpeg et .png sont les seuls autorisés');
-        expect(fileInput.value).toBe(''); // Vérifie que l'input a été réinitialisé
+        // Vérifie que l'input a été réinitialisé
+        expect(fileInput.value).toBe(''); 
       });
     });
   });

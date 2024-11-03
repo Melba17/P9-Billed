@@ -74,9 +74,9 @@ export default class Login {
         this.PREVIOUS_LOCATION = ROUTES_PATH['Dashboard']
         // Met à jour la propriété `PREVIOUS_LOCATION` avec le chemin du tableau de bord, pour garder une trace de la dernière page visitée.
         PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
-        // Assigne la valeur de `this.PREVIOUS_LOCATION` à la variable globale `PREVIOUS_LOCATION` (elle est définie ailleurs dans le code).  
+        // Assigne la valeur de `this.PREVIOUS_LOCATION` à la variable globale `PREVIOUS_LOCATION` 
         document.body.style.backgroundColor = "#fff"
-        // Change le fond de la page en blanc, probablement pour réinitialiser l'apparence après la connexion.
+        // Change le fond de la page en blanc pour réinitialiser l'apparence après la connexion.
       })
   }
   
