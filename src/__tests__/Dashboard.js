@@ -124,7 +124,7 @@ describe('Given I am connected as an Admin', () => {
 
   describe('When I am on Dashboard page and I click 2 times on edit icon of a card', () => {
     test('Then, big bill Icon should Appear',  () => {
-
+      // pathname représente la page actuelle affichée dans l'application après la navigation
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
@@ -260,6 +260,7 @@ describe("Given I am a user connected as Admin", () => {
       expect(contentRefused).toBeTruthy()
       expect(screen.getByTestId("big-billed-icon")).toBeTruthy()
     })
+
   describe("When an error occurs on API", () => {
     beforeEach(() => {
       jest.spyOn(mockStore, "bills")
@@ -287,7 +288,7 @@ describe("Given I am a user connected as Admin", () => {
         }})
       window.onNavigate(ROUTES_PATH.Dashboard)
       await new Promise(process.nextTick);
-      const message = await screen.getByText(/Erreur 404/)
+      const message = screen.getByText(/Erreur 404/)
       expect(message).toBeTruthy()
     })
 
@@ -302,7 +303,7 @@ describe("Given I am a user connected as Admin", () => {
 
       window.onNavigate(ROUTES_PATH.Dashboard)
       await new Promise(process.nextTick);
-      const message = await screen.getByText(/Erreur 500/)
+      const message = screen.getByText(/Erreur 500/)
       expect(message).toBeTruthy()
     })
   })

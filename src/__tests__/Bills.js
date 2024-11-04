@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-// jsdom est une simulation de l'environnement de navigateur, qui permet à Node.js d'interagir avec un DOM simulé. Cela signifie que même sans navigateur réel, Jest peut accéder aux éléments et méthodes du DOM comme document, window, getElementById, etc
+// jsdom est une simulation de l'environnement de navigateur, qui permet (avec Node.js) d'interagir avec un DOM simulé. Cela signifie que même sans navigateur réel, Jest peut accéder aux éléments (document, window, localStorage = objets globaux du navigateur) et méthodes du DOM (document.createElement, appendChild, et querySelector ou méthodes d'interactions utilisateur) => indique à Jest d'utiliser jsdom comme environnement de test (comme si l'application tournait dans un navigateur, mais en réalité, tout se passe dans Node.js)
 
 // Utilisation de Jest (framework de test) et Testing Library (biblio de sélecteurs/méthodes pour les noeuds du DOM = Queries et simulation d'évènements ou comportement utilisateur = Events) pour simuler l'interaction avec l'UI et garantir que l'application fonctionne comme prévu dans ce contexte
 import Bills from "../containers/Bills.js";
@@ -74,24 +74,22 @@ describe("Given I am connected as an employee", () => {
 
     ///// TEST D'INTEGRATION GET : Ce test d'intégration vérifie que les factures sont correctement récupérées via l'API simulée pour un utilisateur connecté (donc moyen de communication pour obtenir les données grace au mockStore qui est une version factice de l'API). Cela permet de vérifier que les factures sont correctement récupérées et affichées /////// 
     test("Then fetches bills from mock API GET", async () => {
-      // Object.defineProperty est une méthode pour redéfinir la propriété 'localStorage' de l'objet window (qui représente un environnement de navigateur factice) en localStorageMock (qui est le mock du localStorage) => localStorage plus élaboré car on a besoin de contrôler précisément les données enregistrées
-     Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-     // Ensuite on y stock les infos de l'utilisateur employé avec setItem
-     window.localStorage.setItem('user', JSON.stringify({
-       type: 'Employee',
-       email: 'employee@test.tld', 
-       statut: 'connected' 
-     }));
-
-      // Crée un conteneur div pour l'application et l'ajoute au DOM
-      const root = document.createElement("div");
-      root.setAttribute("id", "root");
-      document.body.append(root);
+      // Stocke les informations de l'utilisateur dans le localStorage simulé
+      localStorage.setItem('user', JSON.stringify({
+      type: 'Employee',
+      email: 'employee@test.tld',
+      statut: 'connected'
+      }));
 
       // initialise le système de routage/de navigation de l'application. Cela garantit que la gestion des routes est correctement configurée avant de tester la navigation
       router();
       // Simule la navigation vers la page Bills pour être certain que tous les effets associés à l'affichage de cette page (ici le rendu des factures) sont déclenchés => on recrée l'expérience utilisateur réelle 
       window.onNavigate(ROUTES_PATH.Bills);
+        
+      // Crée un conteneur div pour l'application et l'ajoute au DOM
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.append(root);
 
       // Attend que l'élément "Mes notes de frais" apparaisse dans le DOM => attente de l'affichage du tableau de bord employé
       // waitFor() utile pour tester des éléments qui apparaissent ou se mettent à jour de façon asynchrone avant de poursuivre l'exécution du code

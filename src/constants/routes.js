@@ -6,7 +6,7 @@ import DashboardUI from "../views/DashboardUI.js"
 
 // Ce fichier définit la gestion des routes dans une application web. Il permet de contrôler quel composant UI (interface utilisateur) doit être affiché en fonction du chemin (URL) actuel de l'utilisateur (employé ou admin)
 export const ROUTES_PATH = {
-  Login: '/',
+  Login: '/', // Chemin racine
   Bills: '#employee/bills',
   NewBill : '#employee/bill/new',
   Dashboard: '#admin/dashboard'

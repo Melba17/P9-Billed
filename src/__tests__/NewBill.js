@@ -55,7 +55,8 @@ describe("Given I am connected as an employee", () => {
     const html = NewBillUI(); // Génère l'interface de la page NewBill
     document.body.innerHTML = html; // Injecte le HTML généré dans le body du DOM
     newBill = new NewBill({ // Instanciation de la classe NewBill
-      document,
+      /////////// DEPENDANCES ///////////
+      document, // Environnement de navigateur, qui permet d'interagir avec un DOM simulé pour pouvoir le manipuler => jsdom
       onNavigate, // Navigation simulée
       store: mockStore, // Mock du store
       localStorage: window.localStorage, // Passe le mock de localStorage (qui contient les informations de l’utilisateur simulé) comme dépendance à l'instance de NewBill 

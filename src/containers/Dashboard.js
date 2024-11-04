@@ -92,7 +92,7 @@ export const getStatus = (index) => {
 // Classe qui gère l'affichage et l'interaction avec les factures dans le tableau de bord des administrateurs.
 export default class {
   constructor({ document, onNavigate, store, bills, localStorage }) {
-    this.document = document // Référence au document pour manipuler le DOM.
+    this.document = document // Référence au document en tant que navigateur pour manipuler le DOM.
     this.onNavigate = onNavigate // Fonction pour naviguer entre les routes de l'application.
     this.store = store // Référence au store pour accéder aux données des factures.
     // Ajoute un événement de clic pour chaque icône de statut pour afficher les factures correspondantes.

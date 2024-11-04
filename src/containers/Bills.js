@@ -9,7 +9,7 @@ import Logout from "./Logout.js"
 // En résumé, ce code gère l'interface utilisateur employé (tableau de bord) pour : la récupération, la visualisation des factures dans l'application. Il interagit avec le backend pour récupérer les factures et les formate pour un affichage lisible
 
 export default class { 
-  // Déclaration d'une classe par défaut qui va gérer l'interface utilisateur liée aux factures.
+  // Déclaration d'une classe par défaut qui va gérer l'interface utilisateur liée aux factures
   constructor({ document, onNavigate, store, localStorage }) { 
     // Le constructeur de la classe reçoit des objets (document, onNavigate, store, localStorage) nécessaires pour l'interface utilisateur, la navigation, et le stockage local
     this.document = document 

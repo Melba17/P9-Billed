@@ -66,7 +66,7 @@ const mockedBills = {
   },
   
   create(bill) {
-    // Cette ligne est ajoutée pour permettre à la méthode create de prendre en compte les données envoyées par FormData, notamment le fichier téléchargé, ce qui rend la simulation du backend plus précise et adaptable aux données réelles fournies par l'utilisateur, au lieu d'une valeur fixe
+    // Cette ligne est ajoutée pour permettre à la méthode create de prendre en compte notamment les données envoyées par FormData, le fichier téléchargé, ce qui rend la simulation du backend plus précise et adaptable aux données réelles fournies par "l'utilisateur simulé", au lieu d'une valeur fixe
     // Récupère le fichier depuis l'objet FormData
     const file = bill.data.get('file');  
     
