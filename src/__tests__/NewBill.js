@@ -9,6 +9,7 @@ import NewBill from "../containers/NewBill.js"; // Logique métier de NewBill
 import { validateFileExtension } from '../containers/NewBill.js'; // Import de validateFileExtension en tant que fonction
 import { ROUTES_PATH } from '../constants/routes.js'; // Import des chemins de navigation
 import mockStore from "../__mocks__/store.js"; // Mock de la gestion du store pour simuler les appels API
+import { localStorageMock } from "../__mocks__/localStorage.js";
 
 jest.mock("../app/store", () => mockStore);  // Moquer le store avec mockStore
 
