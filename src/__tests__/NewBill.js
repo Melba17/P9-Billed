@@ -51,6 +51,7 @@ describe("Given I am connected as an employee", () => {
   // BEFORE EACH : S'EXÉCUTE AVANT CHAQUE TEST DE CE BLOC (CONFIGURATION COMMUNE)
   beforeEach(() => {
     window.alert = jest.fn(); // Mock de la fonction alert pour éviter d'afficher les vraies alertes (boîte de dialogue) dans les tests et donc interrompre les tests en cours et devoir cliquer sur "ok" - Permet aussi de vérifier que l'alerte a bien été déclenchée avec le bon message (voir plus bas)
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock }); // Ajoute un mock de localStorage pour chaque test - remplace le localStorage intégré de JSDOM par un mock contrôlé (localStorageMock) => personnalisé
     localStorage.setItem("user", JSON.stringify({ email: userEmail })); // Initialise et simule une session utilisateur active via localStorage
     const html = NewBillUI(); // Génère l'interface de la page NewBill
     document.body.innerHTML = html; // Injecte le HTML généré dans le body du DOM

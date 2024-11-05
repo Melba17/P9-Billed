@@ -22,11 +22,15 @@ jest.mock("../app/store", () => mockStore);
 
 
 describe("Given I am connected as an employee", () => {
+  beforeEach(() => {
+    // Définit systématiquement un localStorageMock au début de chaque test
+    Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+  });
+
   describe("When I am on Bills Page", () => {
     // Simule l'affichage de la page des factures et vérifie que l'icône de la facture dans le menu vertical est mise en surbrillance
     test("Then bill icon in vertical layout should be highlighted", async () => {
-      // Simule un utilisateur employé connecté en configurant localStorage pour stocker les informations de l'utilisateur
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+      // Simule un utilisateur employé connecté 
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee',
         email: 'employee@test.tld', 
@@ -113,11 +117,11 @@ describe("Given I am connected as an employee", () => {
       // On simule la fonction de navigation
       const onNavigate = jest.fn();
       test("Then it should navigate to NewBill page", () => {
-        // On injecte le HTML de BillsUI avec des données de factures => représente la page de départ (tableau de bord) avant de naviguer vers la page NewBill
+        // On injecte le HTML de BillsUI avec des données de factures (provenant du dossier fixtures) => représente la page de départ (tableau de bord) avant de naviguer vers la page NewBill
         document.body.innerHTML = BillsUI({ data: bills });
         // On crée une instance de Bills représentant toute l'architecture simulée de l'appli, nécessaire à la page de départ pour fonctionner correctement
         new Bills({
-          document,
+          document, // Environnement de navigateur, qui permet d'interagir avec un DOM simulé pour pouvoir le manipuler => jsdom
           onNavigate, // appel de const onNavigate = jest.fn(); qui sert donc au test
           store: null, // le test n'a pas besoin d'accéder au store dans le test, car aucune donnée n'est récupérée de l'API à ce stade de l'expérience utilisateur
           localStorage: window.localStorage,
@@ -157,7 +161,6 @@ describe("Given I am connected as an employee", () => {
       // Fonction qui s'exécute avant chaque test dans ce groupe, donc prépare une configuration de base, commune à chacun des tests
       beforeEach(() => { 
         jest.spyOn(mockStore, "bills"); // Utilisation de Jest pour espionner la méthode 'bills' de mockStore, permettant de surveiller son utilisation
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock }); // Simulation de l'objet localStorage avec une version fictive pour les tests
         window.localStorage.setItem('user', JSON.stringify({ type: 'Employee', email: 'employee@test.tld' })); // Ajout d'un utilisateur fictif dans le localStorage pour simuler un utilisateur connecté
         const root = document.createElement("div"); // Création d'un nouvel élément div pour simuler le conteneur principal de l'application
         root.setAttribute("id", "root"); // Définition de l'attribut ID pour l'élément div

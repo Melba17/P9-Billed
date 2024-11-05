@@ -106,7 +106,6 @@ handleChangeFile = async (e) => {
         await this.store
           .bills()
           .update({ data: JSON.stringify(bill), selector: this.billId }); // Envoie la facture mise à jour au backend selon son id
-          this.onNavigate(ROUTES_PATH['Bills']); // Redirige vers la page des factures après une mise à jour réussie
       } catch (error) {
         console.error('Erreur lors de la mise à jour de la facture:', error); // Affichage d'une erreur en cas d'échec de mise à jour
       }
