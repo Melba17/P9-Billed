@@ -84,17 +84,17 @@ describe("Given I am connected as an employee", () => {
       email: 'employee@test.tld',
       statut: 'connected'
       }));
+      
+      // Crée un conteneur div pour l'application et l'ajoute au DOM
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.append(root);
 
       // initialise le système de routage/de navigation de l'application. Cela garantit que la gestion des routes est correctement configurée avant de tester la navigation
       router();
       // Simule la navigation vers la page Bills pour être certain que tous les effets associés à l'affichage de cette page (ici le rendu des factures) sont déclenchés => on recrée l'expérience utilisateur réelle 
       window.onNavigate(ROUTES_PATH.Bills);
         
-      // Crée un conteneur div pour l'application et l'ajoute au DOM
-      const root = document.createElement("div");
-      root.setAttribute("id", "root");
-      document.body.append(root);
-
       // Attend que l'élément "Mes notes de frais" apparaisse dans le DOM => attente de l'affichage du tableau de bord employé
       // waitFor() utile pour tester des éléments qui apparaissent ou se mettent à jour de façon asynchrone avant de poursuivre l'exécution du code
       await waitFor(() => screen.getByText("Mes notes de frais"));
@@ -190,7 +190,7 @@ describe("Given I am connected as an employee", () => {
         test("Then it should show a 500 message error", async () => {
           mockStore.bills.mockImplementationOnce(() => { // Simulation de la méthode bills pour renvoyer une promesse rejetée avec une erreur 500
             return {
-              list: () => Promise.reject(new Error("Erreur 500")) // Définition de la méthode list pour rejeter la promesse avec une erreur 500 (Erreur interne du serveur : problème de traitement de la requête par le serveur/ correspond à un problème  interne à l'API)
+              list: () => Promise.reject(new Error("Erreur 500")) // Définition de la méthode list pour rejeter la promesse avec une erreur 500 (Erreur interne du serveur : problème de traitement de la requête par le serveur/ correspond à un problème interne à l'API)
             };
           });
           window.onNavigate(ROUTES_PATH.Bills); // Simule la navigation vers la page des factures

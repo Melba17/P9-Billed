@@ -26,7 +26,7 @@ export const filteredBills = (data, status) => {
         const userEmail = JSON.parse(localStorage.getItem("user")).email
         // Définit une condition pour sélectionner les factures :
         // - Le statut de la facture doit correspondre au statut souhaité.
-        // - L'email de la facture ne doit pas être celui d'un utilisateur de test ni celui de l'utilisateur connecté.
+        // - L'email de la facture ne doit pas être celui d'un utilisateur de test ni celui de l'utilisateur connecté (admin).
         selectCondition =
           (bill.status === status) &&
           ![...USERS_TEST, userEmail].includes(bill.email)

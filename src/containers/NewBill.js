@@ -47,7 +47,7 @@ handleChangeFile = async (e) => {
       const response = await this.store.bills().create({ 
           data: formData, // Envoie le FormData qui contient le fichier et l'email
           headers: {
-              noContentType: true // Indique au navigateur que FormData gère lui-même le Content-Type (ici formData gère des données de type formulaire + email). En fait, on laisse l'application configurer l'envoi des données de manière appropriée (la structure de données), tandis que le navigateur exécute simplement la demande sans imposer de configuration supplémentaire
+              noContentType: true // Indique au navigateur que FormData gère lui-même le Content-Type (ici formData gère des données de type image + email). En fait, on laisse l'application configurer l'envoi des données de manière appropriée (la structure de données), tandis que le navigateur exécute simplement la demande sans imposer de configuration supplémentaire
           }
       }); 
 
