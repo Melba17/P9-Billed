@@ -1,4 +1,4 @@
-// Simulation d'un localStorage => Un mock en mémoire est généralement plus rapide que les interactions avec le véritable localStorage. Cela accélère l'exécution des tests et améliore la performance globale 
+// Simulation d'un localStorage => Un mock parmet des interactions plus rapide et accélère l'exécution des tests et améliore la performance globale 
 // Disponibilité en environnement non-navigateur : lors de tests en environnement Node.js, par exemple, localStorage n'est pas disponible car il n'existe que dans les navigateurs 
 export const localStorageMock = (function() {
   // Déclaration d'un objet `store` pour stocker les données en mémoire, imitant le comportement de localStorage
